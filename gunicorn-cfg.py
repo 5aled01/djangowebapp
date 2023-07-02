@@ -3,8 +3,8 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-bind = '0.0.0.0:5005'
-workers = 7
+bind = '0.0.0.0:0000'
+workers = 1
 accesslog = '-'
 loglevel = 'debug'
 capture_output = True
