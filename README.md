@@ -1,1 +1,1 @@
-newk app
+newk app .
