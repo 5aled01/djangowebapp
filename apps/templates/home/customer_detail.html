@@ -1,10 +1,90 @@
 {% extends 'layouts/base.html' %}
+
+{% block title %} Profile {% endblock title %}
+
 {% block content %}
-  <tr>
-    <td>{{ request.customer.customer_id }}</td>
-    <td>{{ request.customer.name }}</td>
-    <td>{{ request.customer.phone_number }}</td>
-    <td>{{ request.customer.brand }}</td>
-  </tr>
+
+<div class="header pb-4 d-flex align-items-center" 
+     style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-5"></span>
+  <!-- Header container -->
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+      <div class="col-lg-10 col-md-10">
+        <h1 class="display-1 text-white"> 
+          Costumer {{ customer.name }}
+        </h1>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--5">
+  <div class="row">
+    <div class="col-xl-12 order-xl-1">
+      <div class="card">
+        <div class="card-body">
+          {% if messages %}
+             {% for message in messages %}
+                <div class="alert alert-success alert-dismissible d-flex align-items-center fade show" role="alert">
+                  {{ message }}
+                </div>
+             {% endfor %}
+          {% endif %}
+        <form action="{% url 'edit_customer' %}" method="post" onsubmit="return validateForm()">
+            {% csrf_token %}
+
+              <!-- Add a hidden input field for the customer ID -->
+              <input type="hidden" name="customer_id" value="{{ customer.id }}">
+
+            <!-- ... previous code ... -->  
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-username">Name</label>
+                    <input type="text" id="input-username" name="name" class="form-control" placeholder="Full Name" value="{{ customer.name }}" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="inumber">Email address</label>
+                    <input type="tel" id="input-number" name="phone_number" class="form-control" value="{{ customer.phone_number }}" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-brand">Brand</label>
+                    <input type="text" id="input-brand" name="brand" class="form-control" value="{{ customer.brand }}" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-last-name">Partner</label>
+                    <input type="text" id="input-partner" name="partner" class="form-control" value="{{ customer.partner }}" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-7 text-right">
+            <button type="submit" class="btn btn-sm btn-primary">Edit customer</button> 
+            <button type="submit" class="btn btn-sm btn-danger">Delete customer</button>    
+          </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  {% include "includes/footer.html" %}
+
+</div>
 
 {% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
