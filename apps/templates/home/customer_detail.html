@@ -1,0 +1,10 @@
+{% extends 'layouts/base.html' %}
+{% block content %}
+  <tr>
+    <td>{{ request.customer.customer_id }}</td>
+    <td>{{ request.customer.name }}</td>
+    <td>{{ request.customer.phone_number }}</td>
+    <td>{{ request.customer.brand }}</td>
+  </tr>
+
+{% endblock content %}
