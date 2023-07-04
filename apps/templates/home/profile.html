@@ -47,6 +47,13 @@
     <div class="col-xl-8 order-xl-1">
       <div class="card">
         <div class="card-body">
+          {% if messages %}
+             {% for message in messages %}
+                <div class="alert alert-success" role="alert">
+                  {{ message }}
+                </div>
+             {% endfor %}
+          {% endif %}
           <form action="{% url 'edit_profile' %}" method="post" onsubmit="return validateForm()">
             {% csrf_token %}
             <!-- ... previous code ... -->  

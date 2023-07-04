@@ -8,6 +8,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm, ProfileForm, SignUpForm
 from django.views.decorators.csrf import csrf_protect
+from django.contrib import messages
 
 
 def login_view(request):
@@ -61,8 +62,17 @@ def edit_profile(request):
     if request.method == 'POST':
         form = ProfileForm(request.POST, instance=request.user)
         if form.is_valid():
-            form.save()
-            return redirect('profile.html')  # Redirect to the edit_profile URL
+            user = form.save()
+            # Authenticate the user again with the updated credentials
+            updated_user = authenticate(username=user.username, password=form.cleaned_data['password'])
+            if updated_user is not None:
+                login(request, updated_user)
+                messages.success(request, "Password updated successfully.")
+                return redirect('profile.html')
+            else:
+                # Handle authentication error
+                messages.error(request, "Failed to update password.")
+                return redirect('edit_profile')
     else:
         form = ProfileForm(instance=request.user)
 
