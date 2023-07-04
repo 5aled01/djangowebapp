@@ -23,7 +23,23 @@ class LoginForm(forms.Form):
                 "class": "form-control"
             }
         ))
-
+    
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name','password']
+        widgets = {
+            'password': forms.PasswordInput()
+        }
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get('password')
+        if password:
+            user.set_password(password)
+        if commit:
+            user.save()
+        return user
+    
 
 class SignUpForm(UserCreationForm):
     username = forms.CharField(

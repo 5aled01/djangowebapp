@@ -6,7 +6,8 @@ Copyright (c) 2019 - present AppSeed.us
 # Create your views here.
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
-from .forms import LoginForm, SignUpForm
+from .forms import LoginForm, ProfileForm, SignUpForm
+from django.views.decorators.csrf import csrf_protect
 
 
 def login_view(request):
@@ -31,7 +32,7 @@ def login_view(request):
     return render(request, "accounts/login.html", {"form": form, "msg": msg})
 
 
-def register_user(request):
+def register_user(request): 
     msg = None
     success = False
 
@@ -54,3 +55,15 @@ def register_user(request):
         form = SignUpForm()
 
     return render(request, "accounts/register.html", {"form": form, "msg": msg, "success": success})
+
+@csrf_protect
+def edit_profile(request):
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            return redirect('profile.html')  # Redirect to the edit_profile URL
+    else:
+        form = ProfileForm(instance=request.user)
+
+    return render(request, 'profile.html', {'form': form})
