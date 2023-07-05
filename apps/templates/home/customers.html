@@ -15,9 +15,24 @@
                 <li class="breadcrumb-item"><a href="#">Customers</a></li>
               </ol>
             </nav>
+
+             <!-- Search form -->
+             <form class="navbar-search navbar-search-light form-inline mr-sm-3" id="navbar-search-main" action="/customers.html">
+              <div class="input-group input-group-alternative input-group-merge rounded">
+                <input class="form-control rounded-right" placeholder="Search..." type="text" name="search" value="{{ request.GET.search }}">
+                <div class="input-group-append">
+                  <button class="btn btn-outline-primary my-2 my-sm-0" type="submit" data-target="#navbar-search-main">
+                    <i class="fas fa-search"></i>
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
+
+          
+
           <div class="col-lg-6 col-5 text-right">
-            <a href="#" class="btn btn-sm btn-neutral">Add new</a>
+            <a href="#" class="btn btn-sm btn-neutral" data-toggle="modal" data-target="#addCustomerModal">Add new customers</a>
             <a href="#" class="btn btn-sm btn-neutral">Filters</a>
           </div>
         </div>
@@ -32,7 +47,14 @@
         <div class="card">
           <!-- Card header -->
           <div class="card-header border-0">
-            <h3 class="mb-0">Light table</h3>
+            <h3 class="mb-0">List of customers 
+              
+                  {% if messages %}
+                {% for message in messages %}
+                <i class="ni ni-check-bold text-green"> {{ message }} </i>
+                {% endfor %}
+                {% endif %} 
+            </h3>
           </div>
           <!-- Light table -->
           <div class="table-responsive">
@@ -53,7 +75,6 @@
                   <td>{{ customer.phone_number }}</td>
                   <td>{{ customer.brand }}</td>
                   <td>{{ customer.partner }}</td>
-                  
                   <td class="text-center">
                     <div class="dropdown">
                       <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -65,6 +86,10 @@
                       </div>
                     </div>
                   </td>
+                  {% empty %}
+                  <tr>
+                    <td colspan="5" class="text-center">No customers found.</td>
+                  </tr>
 
                 </tr>
                 {% endfor %}
@@ -104,7 +129,73 @@
     {% include "includes/footer.html" %}
   </div>
 
+  <!-- Add Customer Modal -->
+  <div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addCustomerModalLabel">Add New Customer</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="{% url 'add_customer' %}" method="post" onsubmit="return validateForm()">
+        <div class="modal-body">
+          <!-- Add customer form goes here -->
+              {% csrf_token %}
+              <!-- ... previous code ... -->  
+              <div class="pl-lg-4">
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-name">Name</label>
+                      <input type="text" id="input-username" name="name" class="form-control" placeholder="Name of the customer..." required>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-Phone">Phone</label>
+                      <input type="tel" id="input-tel" name="phone_number" class="form-control" placeholder="phone number..." required>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-first-name">Brand</label>
+                      <input type="text" id="input-brand" name="brand" class="form-control" placeholder="brand.." required>
+                    </div>
+                  </div>
+                  <div class="col-lg-6">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-last-name">Partner</label>
+                      <input type="text" id="input-partner" name="partner" class="form-control" value="Gemal" required>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            <!-- Form fields for adding a new customer -->
+          
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </form>
+    </div>
+  </div>
+  
+
 {% endblock content %}
 
 <!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+{% block javascripts %}
+  <script>
+    // Include the following JavaScript code if you want to handle form submission or other actions in the modal
+    $(document).ready(function() {
+      // Add any necessary JavaScript code here
+    });
+  </script>
+{% endblock javascripts %}

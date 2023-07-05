@@ -11,6 +11,8 @@ from django.views.decorators.csrf import csrf_protect
 from .forms import CustomerForm
 from .models import Customer
 from django.contrib import messages
+from django.contrib.postgres.search import SearchVector
+
 
 from django.template import loader
 from django.urls import reverse
@@ -40,13 +42,22 @@ def pages(request):
 
         
         if load_template == 'customers.html':
-            customers = Customer.objects.all()
-            context['customers'] = customers
+            search_query = request.GET.get('search', '')
+            
+            if search_query != '':
+                
+                customers = Customer.objects.annotate(search=SearchVector('name', 'phone_number', 'brand', 'partner')).filter(search=search_query)
+                context['customers'] = customers
+            
+            else:      
+                print(' search_query ----------', search_query)
+                customers = Customer.objects.all()
+                context['customers'] = customers
 
         if load_template == 'customer_detail.html':
-            customer_id = request.GET.get('customer_id')
-            customer = get_object_or_404(Customer, id=customer_id)
-            context['customer'] = customer
+                customer_id = request.GET.get('customer_id')
+                customer = get_object_or_404(Customer, id=customer_id)
+                context['customer'] = customer
         
         #print('load_template----', load_template)
 
@@ -82,6 +93,24 @@ def edit_customer(request):
         form = CustomerForm(instance=customer)
     html_template = loader.get_template('home/customer_detail.html')
     return HttpResponse(html_template.render(context, request))
+
+
+def add_customer(request):
+    if request.method == 'POST':
+        form = CustomerForm(request.POST)
+        print(form)
+        if form.is_valid():
+            form.save()
+
+            print('add_customer ----------', form)
+            messages.success(request, "Customer added successfully.")
+            return redirect('home/customers.html')  # Redirect to the customer list page after successful submission
+    else:
+        form = CustomerForm()
+
+    customers = Customer.objects.all()
+    context = {'form': form, 'customers': customers}
+    return render(request, 'home/customers.html', context)
 
 
 def delete_customer(request, customer_id):
