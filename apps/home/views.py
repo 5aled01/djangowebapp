@@ -10,6 +10,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_protect
 from .forms import CustomerForm
 from .models import Customer
+from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.postgres.search import SearchVector
 
@@ -47,12 +48,14 @@ def pages(request):
             if search_query != '':
                 
                 customers = Customer.objects.annotate(search=SearchVector('name', 'phone_number', 'brand', 'partner')).filter(search=search_query)
-                context['customers'] = customers
             
-            else:      
-                print(' search_query ----------', search_query)
+            else:
                 customers = Customer.objects.all()
-                context['customers'] = customers
+                
+            paginator = Paginator(customers, per_page=4)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            context['customers'] = page_obj
 
         if load_template == 'customer_detail.html':
                 customer_id = request.GET.get('customer_id')
@@ -73,6 +76,7 @@ def pages(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
+@login_required(login_url="/login/")
 def edit_customer(request):
 
     if request.method == 'POST':
@@ -94,7 +98,7 @@ def edit_customer(request):
     html_template = loader.get_template('home/customer_detail.html')
     return HttpResponse(html_template.render(context, request))
 
-
+@login_required(login_url="/login/")
 def add_customer(request):
     if request.method == 'POST':
         form = CustomerForm(request.POST)
@@ -113,6 +117,8 @@ def add_customer(request):
     return render(request, 'home/customers.html', context)
 
 
+
+@login_required(login_url="/login/")
 def delete_customer(request, customer_id):
     customer = get_object_or_404(Customer, id=customer_id)
     if request.method == 'POST':
@@ -122,4 +128,21 @@ def delete_customer(request, customer_id):
     return render(request, 'customer_detail.html', {'customer': customer})
 
 
+
+@login_required(login_url="/login/")
+def customer_detail(request):
+
+    try:
+
+        customer_id = request.GET.get('customer_id')
+        customer = get_object_or_404(Customer, id=customer_id)
+        context['customer'] = customer
+            
+            #print('load_template----', load_template)
+
+        return render(request, 'customer_detail.html', {'customer': customer})
+
+    except:
+        html_template = loader.get_template('home/page-500.html')
+        return HttpResponse(html_template.render(context, request))
 

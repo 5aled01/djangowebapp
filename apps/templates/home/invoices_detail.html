@@ -1,0 +1,117 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Add Invoice{% endblock title %}
+
+{% block content %}
+
+<div class="header pb-4 d-flex align-items-center" 
+     style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-5"></span>
+  <!-- Header container -->
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+      <div class="col-lg-10 col-md-10">
+        <h1 class="display-1 text-white"> 
+          Add invoice for the customer {{ customer.name }}
+        </h1>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--5">
+  <div class="row">
+    <div class="col-xl-12 order-xl-1">
+      <div class="card">
+        <div class="card-body">
+          <form action="#" method="post" onsubmit="return validateForm()">
+            {% csrf_token %}
+            <input type="hidden" name="customer_id" value="{{ customer.id }}">
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-item">Item</label>
+                    <input type="text" id="input-item" name="item" class="form-control" placeholder="Item" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-quantity">Quantity</label>
+                    <input type="number" id="input-quantity" name="quantity" class="form-control" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-length">Length</label>
+                    <input type="number" id="input-length" name="length" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-width">Width</label>
+                    <input type="number" id="input-width" name="width" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-height">Height</label>
+                    <input type="number" id="input-height" name="height" class="form-control" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-cbm">CBM</label>
+                    <input type="number" id="input-cbm" name="CBM" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-rate">Rate</label>
+                    <input type="number" id="input-rate" name="rate" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-price">Price</label>
+                    <input type="number" id="input-price" name="price" class="form-control" required>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-total-cbm">Total CBM</label>
+                    <input type="number" id="input-total-cbm" name="total_cbm" class="form-control" required>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-total">Total</label>
+                    <input type="number" id="input-total" name="total" class="form-control" required>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-7 text-right">
+              <button type="submit" class="btn btn-sm btn-primary">Create Invoice</button> 
+              <button type="reset" class="btn btn-sm btn-danger">Cancel</button>    
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% include "includes/footer.html" %}
+</div>
+
+{% endblock content %}
+
+<!-- Specific JS goes HERE --> 
+{% block javascripts %}{% endblock javascripts %}
