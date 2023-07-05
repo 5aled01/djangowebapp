@@ -13,7 +13,7 @@
     <div class="row">
       <div class="col-lg-10 col-md-10">
         <h1 class="display-1 text-white"> 
-          Costumer {{ customer.name }}
+          Customer {{ customer.name }}
         </h1>
       </div>
     </div>
@@ -32,11 +32,11 @@
                 </div>
              {% endfor %}
           {% endif %}
-        <form action="{% url 'edit_customer' %}" method="post" onsubmit="return validateForm()">
+          <form action="{% url 'edit_customer' %}" method="post" onsubmit="return">
             {% csrf_token %}
 
-              <!-- Add a hidden input field for the customer ID -->
-              <input type="hidden" name="customer_id" value="{{ customer.id }}">
+            <!-- Add a hidden input field for the customer ID -->
+            <input type="hidden" name="customer_id" value="{{ customer.id }}">
 
             <!-- ... previous code ... -->  
             <div class="pl-lg-4">
@@ -69,22 +69,30 @@
                 </div>
               </div>
             </div>
-            <div class="col-7 text-right">
-            <button type="submit" class="btn btn-sm btn-primary">Edit customer</button> 
-            <button type="submit" class="btn btn-sm btn-danger">Delete customer</button>    
-          </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  
-  {% include "includes/footer.html" %}
-
-</div>
-
-{% endblock content %}
-
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+            <div class="col-12 text-right">
+              <div class="row">
+                <div class="col-md-9">
+                  <button type="submit" class="btn btn-sm btn-primary">Edit customer</button> 
+                </div>
+              </form>
+                <div class="col-md-3 mt-2 mt-md-0 text-md-right">
+                  <form action="{% url 'delete_customer' %}" method="post" onsubmit="return confirm('Are you sure you want to delete this customer?');">
+                    {% csrf_token %}
+                    <input type="hidden" name="customer_id" value="{{ customer.id }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete customer</button>
+                    </div>
+                    </div>
+                    </div>
+                  </form>
+                    </div>
+                    </div>
+                    </div>
+                    
+                      </div>
+                    {% include "includes/footer.html" %}
+                    
+                    </div>
+                    {% endblock content %}
+                    
+                    <!-- Specific JS goes HERE --> 
+                    {% block javascripts %}{% endblock javascripts %}

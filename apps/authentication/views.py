@@ -67,11 +67,11 @@ def edit_profile(request):
             updated_user = authenticate(username=user.username, password=form.cleaned_data['password'])
             if updated_user is not None:
                 login(request, updated_user)
-                messages.success(request, "Password updated successfully.")
+                messages.success(request, "Profile updated successfully.")
                 return redirect('profile.html')
             else:
                 # Handle authentication error
-                messages.error(request, "Failed to update password.")
+                messages.error(request, "Failed to update .")
                 return redirect('edit_profile')
     else:
         form = ProfileForm(instance=request.user)

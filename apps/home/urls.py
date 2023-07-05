@@ -14,6 +14,7 @@ urlpatterns = [
     path('edit_customer', views.edit_customer, name='edit_customer'),
     path('customer_detail', views.customer_detail, name='customer_detail'),
     path('add_customer', views.add_customer, name='add_customer'),
+    path('delete_customer', views.delete_customer, name='delete_customer'),
 
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
