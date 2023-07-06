@@ -154,17 +154,16 @@ def delete_customer(request):
 
 
 @login_required(login_url="/login/")
-def customer_detail(request):
+def invoices_detail(request):
 
     try:
-
         customer_id = request.GET.get('customer_id')
         customer = get_object_or_404(Customer, id=customer_id)
         context['customer'] = customer
             
-            #print('load_template----', load_template)
+        print('customer_id----', customer_id)
 
-        return render(request, 'customer_detail.html', {'customer': customer})
+        return render(request, 'invoices_detail.html', {'customer': customer})
 
     except:
         html_template = loader.get_template('home/page-500.html')

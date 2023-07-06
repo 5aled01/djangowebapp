@@ -4,6 +4,10 @@
 
 {% block content %}
 
+{% load static %}
+        <link rel="stylesheet" type="text/css" href="{% static '/assets/css/style_invoice.css' %}">
+        <link rel="license" href="https://www.opensource.org/licenses/mit-license/">
+
 <div class="header pb-4 d-flex align-items-center" 
      style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
   <!-- Mask -->
@@ -21,97 +25,281 @@
 </div>
 <!-- Page content -->
 <div class="container-fluid mt--5">
-  <div class="row">
-    <div class="col-xl-12 order-xl-1">
-      <div class="card">
-        <div class="card-body">
-          <form action="#" method="post" onsubmit="return validateForm()">
-            {% csrf_token %}
-            <input type="hidden" name="customer_id" value="{{ customer.id }}">
-            <div class="pl-lg-4">
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-item">Item</label>
-                    <input type="text" id="input-item" name="item" class="form-control" placeholder="Item" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-quantity">Quantity</label>
-                    <input type="number" id="input-quantity" name="quantity" class="form-control" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-length">Length</label>
-                    <input type="number" id="input-length" name="length" class="form-control" required>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-width">Width</label>
-                    <input type="number" id="input-width" name="width" class="form-control" required>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-height">Height</label>
-                    <input type="number" id="input-height" name="height" class="form-control" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-cbm">CBM</label>
-                    <input type="number" id="input-cbm" name="CBM" class="form-control" required>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-rate">Rate</label>
-                    <input type="number" id="input-rate" name="rate" class="form-control" required>
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-price">Price</label>
-                    <input type="number" id="input-price" name="price" class="form-control" required>
-                  </div>
-                </div>
-              </div>
-              <div class="row">
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-total-cbm">Total CBM</label>
-                    <input type="number" id="input-total-cbm" name="total_cbm" class="form-control" required>
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="form-group">
-                    <label class="form-control-label" for="input-total">Total</label>
-                    <input type="number" id="input-total" name="total" class="form-control" required>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-7 text-right">
-              <button type="submit" class="btn btn-sm btn-primary">Create Invoice</button> 
-              <button type="reset" class="btn btn-sm btn-danger">Cancel</button>    
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+    <div class="row">
+        <div class="col">
+          <div class="card">
 
-  {% include "includes/footer.html" %}
+            <div class="card-body">
+                <header>
+                    <address>
+                        <p>FERRY OCEANAIR SHIPPING SERVICES L.L.C</p>
+                        <p>Phone: +971 503 941 062</p>
+                        <p>Dubai Al aweer</p>
+                    </address>
+                    <span><img alt="" src="http://www.jonathantneal.com/examples/invoice/logo.png"><input type="file" accept="image/*"></span>
+                </header>
+                <article><!--/sinvoice_save-->
+                    <form id="invoice-form" action="#" method="POST">
+                        {% csrf_token %}
+                    <h1>Customer</h1>
+                    <address>
+                        <p>{{ customer.name }}<br>{{ customer.brand }} <br> Phone: +{{ customer.phone_number }} </p>
+                    </address>
+                    <table class="meta">
+                        <tr>
+                            <th><span>Invoice #</span></th>
+                            <td><span>101138</span></td>
+                        </tr>
+                        <tr>
+                            <th><span>Date</span></th>
+                            <td><span>January 1, 2012</span></td>
+                        </tr>
+                        <tr>
+                            <th><span>Manifest #</span></th>
+                            <td>11</td>
+                        </tr>
+                    </table>
+                    <!-- ... previous code ... -->
+
+                    <table class="inventory">
+                        <thead>
+                            <tr>
+                                <th><span>Item Description</span></th>
+                                <th><span>Quantity</span></th>
+                                <th><span>Length</span></th>
+                                <th><span>Width</span></th>
+                                <th><span>Height</span></th>
+                                <th><span>CBM</span></th>
+                                <th><span>Rate</span></th>
+                                <th><span>Prince (AED)</span></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="item-list">
+                            <tr class="default-row">
+                                <td><a class="cut">-</a><input type="text" class="Description-input"></td>
+                                <td><input type="number" class="quantity-input" value="1" required></td>
+                                <td><input type="number" class="length-input" required></td>
+                                <td><input type="number" class="width-input" required></td>
+                                <td><input type="number" class="height-input" required></td>
+                                <td class="cbm-input"></td>
+                                <td class="rate-input">650</td>
+                                <td class="price-input"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <a class="add" >+</a>
+                    <table class="balance">
+                        <tr>
+                            <th><span >Total Packages</span></th>
+                           <td><input type="number" class="totalpack-input" disabled="true" required> </td>
+                        </tr>
+                        <tr>
+                            <th><span >Total CBM</span></th>
+                            <td><input type="number" class="totalcbm-input" disabled="true" required> </td>
+                        </tr>
+                        <tr>
+                            <th><span >Grand Total</span></th>
+                            <td><input class="totalprice-input" type="number"  disabled="true" required> </td>
+                        </tr>
+
+                        <tr> <th class="rm"></th>
+                            <td id="rm"><button type="submit"  class="btn btn-sm btn-primary">Save Invoice</button></td>
+                        </tr>
+
+                    </table>
+                </form>
+                </article>
+                <aside>
+                    <h1><span>Additional Notes</span></h1>
+                    <div>
+                        <p>Dear valued customers, who will pay by ounce, please pay via Bankili. <br/> <strong>+222 46 61 62 18</strong>
+                        </p>
+                    </div>
+                </aside>
+            </div>
+</div>
+</div>
+</div>
 </div>
 
+
+  {% include "includes/footer.html" %}
 {% endblock content %}
 
-<!-- Specific JS goes HERE --> 
-{% block javascripts %}{% endblock javascripts %}
+<!-- Specific JS goes HERE -->
+<!-- Specific JS goes HERE -->
+
+{% block javascripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const addRowButton = document.querySelector(".add");
+    const itemList = document.getElementById("item-list");
+    const totalPackInput = document.querySelector(".totalpack-input");
+    const totalCBMInput = document.querySelector(".totalcbm-input");
+    const totalPriceInput = document.querySelector(".totalprice-input");
+
+    addRowButton.addEventListener("click", function() {
+      const newRow = generateTableRow();
+      itemList.appendChild(newRow);
+      calculateTotals();
+    });
+
+    itemList.addEventListener("click", function(event) {
+      if (event.target.classList.contains("cut")) {
+        const row = event.target.parentNode.parentNode;
+        if (!row.classList.contains("default-row")) {
+          itemList.removeChild(row);
+          calculateTotals();
+        }
+      }
+    });
+
+    itemList.addEventListener("input", function(event) {
+      const row = event.target.parentNode.parentNode;
+      const quantityInput = row.querySelector(".quantity-input");
+      const lengthInput = row.querySelector(".length-input");
+      const widthInput = row.querySelector(".width-input");
+      const heightInput = row.querySelector(".height-input");
+      const cbmInput = row.querySelector(".cbm-input");
+      const priceInput = row.querySelector(".price-input");
+      const rateInput = row.querySelector(".rate-input");
+
+      if (event.target === quantityInput || event.target === lengthInput || event.target === widthInput || event.target === heightInput) {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const length = parseFloat(lengthInput.value) || 0;
+        const width = parseFloat(widthInput.value) || 0;
+        const height = parseFloat(heightInput.value) || 0;
+        const rate = parseFloat(rateInput.textContent) || 0;
+
+        const cbm = (quantity * length * width * height) / 1000000;
+        const price = cbm * rate;
+
+        cbmInput.textContent = cbm.toFixed(2);
+        priceInput.textContent = price.toFixed(2);
+
+        calculateTotals();
+      }
+    });
+
+    function generateTableRow() {
+      const row = document.createElement("tr");
+      row.innerHTML =
+        `<td><a class="cut">-</a><input type="text" class="Description-input"></td>` +
+        '<td><input type="number" class="quantity-input" value="1"></td>'+
+        '<td><input type="number" class="length-input"></td>' +
+        '<td><input type="number" class="width-input"></td>' +
+        '<td><input type="number" class="height-input"></td>' +
+        '<td class="cbm-input"></td>' +
+        `<td class="rate-input">650</td>`+
+        `<td class="price-input"></td>`;
+
+      return row;
+    }
+
+    function calculateTotals() {
+      const rows = itemList.querySelectorAll("tr");
+      let totalPackages = 1;
+      let totalCBM = 0;
+      let totalPrice = 0;
+
+      rows.forEach(function(row) {
+        if (!row.classList.contains("default-row")) {
+          const quantityInput = row.querySelector(".quantity-input");
+          const cbmInput = row.querySelector(".cbm-input");
+          const priceInput = row.querySelector(".price-input");
+
+          const quantity = parseFloat(quantityInput.value) || 0;
+          const cbm = parseFloat(cbmInput.textContent) || 0;
+          const price = parseFloat(priceInput.textContent) || 0;
+
+          totalPackages += quantity;
+          totalCBM += cbm;
+          totalPrice += price;
+        }
+      });
+
+      totalPackInput.value = totalPackages;
+      totalCBMInput.value = totalCBM.toFixed(2);
+      totalPriceInput.value = totalPrice.toFixed(2);
+    }
+
+    const invoiceForm = document.getElementById("invoice-form");
+invoiceForm.addEventListener("submit", function(event) {
+  event.preventDefault();
+
+  const rows = itemList.querySelectorAll("tr");
+  const invoiceData = {};
+
+  rows.forEach(function(row) {
+    if (!row.classList.contains("default-row")) {
+      const descriptionInput = row.querySelector(".Description-input");
+      const quantityInput = row.querySelector(".quantity-input");
+      const lengthInput = row.querySelector(".length-input");
+      const widthInput = row.querySelector(".width-input");
+      const heightInput = row.querySelector(".height-input");
+      const cbmInput = row.querySelector(".cbm-input");
+      const rateInput = row.querySelector(".rate-input");
+      const priceInput = row.querySelector(".price-input");
+
+      const productID = descriptionInput.dataset.productID;
+
+      if (!invoiceData.hasOwnProperty(productID)) {
+        invoiceData[productID] = {
+          customerID: "{{ customer.id }}",
+          item: descriptionInput.value,
+          quantity: 0,
+          length: parseFloat(lengthInput.value),
+          width: parseFloat(widthInput.value),
+          height: parseFloat(heightInput.value),
+          CBM: 0,
+          rate: parseFloat(rateInput.textContent),
+          price: 0
+        };
+      }
+
+      const quantity = parseInt(quantityInput.value);
+      const cbm = parseFloat(cbmInput.textContent);
+      const price = parseFloat(priceInput.textContent);
+
+      invoiceData[productID].quantity += quantity;
+      invoiceData[productID].CBM += cbm;
+      invoiceData[productID].price += price;
+    }
+  });
+
+  const invoiceItems = Object.values(invoiceData);
+
+  // Send the invoiceItems to the server using AJAX or submit the form to a backend endpoint
+  // Here, we'll use AJAX as an example
+
+  const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0].value;
+
+  const request = new XMLHttpRequest();
+  request.open("POST", "{% url 'invoice_save' %}");
+  request.setRequestHeader("Content-Type", "application/json");
+  request.setRequestHeader("X-CSRFToken", csrfToken);
+  request.onload = function() {
+    if (request.status === 200) {
+      // Handle successful response
+      console.log("Invoice saved successfully!");
+      // Redirect to a success page or perform any additional actions
+    } else {
+      // Handle error response
+      console.error("Failed to save invoice");
+      // Show an error message or perform any additional error handling
+    }
+  };
+  request.onerror = function() {
+    // Handle request error
+    console.error("Failed to send request");
+    // Show an error message or perform any additional error handling
+  };
+  request.send(JSON.stringify(invoiceItems));
+});
+
+
+  });
+</script>
+{% endblock javascripts %}
