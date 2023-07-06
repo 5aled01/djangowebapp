@@ -78,25 +78,22 @@ def pages(request):
 
 @login_required(login_url="/login/")
 def edit_customer(request):
-
     if request.method == 'POST':
         customer_id = request.POST.get('customer_id')
         customer = get_object_or_404(Customer, id=customer_id)
-        
-        context['customer'] = customer
-
         form = CustomerForm(request.POST, instance=customer)
         
-        print(form)
         if form.is_valid():
             form.save()
-            messages.success(request, "Password updated successfully.")
-            html_template = loader.get_template('home/customer_detail.html')
-            return HttpResponse(html_template.render(context, request))  # Redirect to the customer list page after successful submission
-    else: 
+            messages.success(request, "Customer updated successfully.")
+            return redirect('customers.html', customer_id=customer_id)
+    else:
+        customer_id = request.GET.get('customer_id')
+        customer = get_object_or_404(Customer, id=customer_id)
         form = CustomerForm(instance=customer)
-    html_template = loader.get_template('home/customer_detail.html')
-    return HttpResponse(html_template.render(context, request))
+    
+    context = {'form': form, 'customer': customer}
+    return render(request, 'home/customer_detail.html', context)
 
 @login_required(login_url="/login/")
 def add_customer(request):
@@ -118,14 +115,13 @@ def add_customer(request):
 
 
 
-@login_required(login_url="/login/")
-def delete_customer(request, customer_id):
-    customer = get_object_or_404(Customer, id=customer_id)
+def delete_customer(request):
     if request.method == 'POST':
+        customer_id = request.POST.get('customer_id')
+        customer = get_object_or_404(Customer, id=customer_id)
         customer.delete()
-        return redirect('home/customer_detail.html')  # Redirect to the customer list page after successful deletion
-
-    return render(request, 'customer_detail.html', {'customer': customer})
+        messages.success(request, "Customer deleted successfully.")
+        return redirect('customers.html')  # Redirect to the desired URL after successful deletion
 
 
 
