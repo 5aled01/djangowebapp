@@ -5,6 +5,7 @@ Copyright (c) 2019 - present AppSeed.us
 
 from django import forms
 from .models import Customer
+from .models import Invoice
 
 
 
@@ -46,4 +47,12 @@ class CustomerForm(forms.ModelForm):
         fields = ('name', 'phone_number', 'brand', 'partner')
 
 
+
+class InvoiceForm(forms.ModelForm):
+    class Meta:
+        model = Invoice
+        fields = ['id_customer', 'date', 'item', 'quantity', 'length', 'width', 'height', 'CBM', 'rate', 'price']
+
+    total_cbm = forms.DecimalField(disabled=True, required=False)
+    total = forms.DecimalField(disabled=True, required=False)
 

@@ -14,7 +14,10 @@ class Customer(models.Model):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20)
     brand = models.CharField(max_length=100)
-    partner = models.CharField(max_length=100, default = 'Gemal')
+    partner = models.CharField(max_length=100, default='Gemal')
+    created_date = models.DateTimeField(default=timezone.now)
+
+    
 
 class Invoice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
