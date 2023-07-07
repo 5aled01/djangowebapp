@@ -113,20 +113,26 @@ def pages(request):
 
 @login_required(login_url="/login/")
 def edit_customer(request):
+    customer_id = request.GET.get('customer_id')
+    customer = get_object_or_404(Customer, id=customer_id)
+
     if request.method == 'POST':
-        customer_id = request.POST.get('customer_id')
-        customer = get_object_or_404(Customer, id=customer_id)
         form = CustomerForm(request.POST, instance=customer)
         
         if form.is_valid():
             form.save()
             messages.success(request, "Customer updated successfully.")
-            return redirect('customers.html', customer_id=customer_id)
+            return redirect('customer_detail', customer_id=customer.id)
     else:
-        customer_id = request.GET.get('customer_id')
-        customer = get_object_or_404(Customer, id=customer_id)
         form = CustomerForm(instance=customer)
     
+    context = {'form': form, 'customer': customer}
+    return render(request, 'home/customer_detail.html', context)
+
+@login_required(login_url="/login/")
+def customer_detail(request, customer_id):
+    customer = get_object_or_404(Customer, id=customer_id)
+    form = CustomerForm(instance=customer)
     context = {'form': form, 'customer': customer}
     return render(request, 'home/customer_detail.html', context)
 

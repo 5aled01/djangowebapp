@@ -32,7 +32,7 @@
                 </div>
              {% endfor %}
           {% endif %}
-          <form action="{% url 'edit_customer' %}" method="post" onsubmit="return">
+          <form action="{% url 'edit_customer' %}?customer_id={{ customer.id }}" method="post" onsubmit="return">
             {% csrf_token %}
 
             <!-- Add a hidden input field for the customer ID -->
@@ -71,12 +71,12 @@
             </div>
             <div class="col-12 text-right">
               <div class="row">
-                <div class="col-md-9">
-                  <button type="submit" class="btn btn-sm btn-primary">Edit customer</button> 
-                </div>
-              </form>
-                <div class="col-md-3 mt-2 mt-md-0 text-md-right">
-                  <form action="{% url 'delete_customer' %}" method="post" onsubmit="return confirm('Are you sure you want to delete this customer?');">
+                <div class="col-md-10 ">
+                  <button type="submit" class="btn btn-sm btn-primary ">Edit customer</button> 
+              </div>
+          </form>
+                <div class=" mt-md-0 text-md-right">
+                  <form action="{% url 'delete_customer' %}" method="post" onsubmit="return confirm('Are you sure you want to delete this customer?');" class="d-inline">
                     {% csrf_token %}
                     <input type="hidden" name="customer_id" value="{{ customer.id }}">
                     <button type="submit" class="btn btn-sm btn-danger">Delete customer</button>
