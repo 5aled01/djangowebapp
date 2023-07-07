@@ -41,6 +41,7 @@
                 <article><!--/sinvoice_save-->
                     <form id="invoice-form" action="#" method="POST">
                         {% csrf_token %}
+                        
                     <h1>Customer</h1>
                     <address>
                         <p>{{ customer.name }}<br>{{ customer.brand }} <br> Phone: +{{ customer.phone_number }} </p>
@@ -48,11 +49,11 @@
                     <table class="meta">
                         <tr>
                             <th><span>Invoice #</span></th>
-                            <td><span>101138</span></td>
+                            <td><span>------</span></td>
                         </tr>
                         <tr>
                             <th><span>Date</span></th>
-                            <td><span>January 1, 2012</span></td>
+                            <td><span id="date"></span></td>
                         </tr>
                         <tr>
                             <th><span>Manifest #</span></th>
@@ -77,8 +78,8 @@
 
                         <tbody id="item-list">
                             <tr class="default-row">
-                                <td><a class="cut">-</a><input type="text" class="Description-input"></td>
-                                <td><input type="number" class="quantity-input" value="1" required></td>
+                                <td><a class="cut">-</a><input type="text" class="Description-input" required></td>
+                                <td><input type="number" class="quantity-input" required></td>
                                 <td><input type="number" class="length-input" required></td>
                                 <td><input type="number" class="width-input" required></td>
                                 <td><input type="number" class="height-input" required></td>
@@ -97,7 +98,7 @@
                         </tr>
                         <tr>
                             <th><span >Total CBM</span></th>
-                            <td><input type="number" class="totalcbm-input" disabled="true" required> </td>
+                            <td><input class="totalcbm-input" type="number"  disabled="true" required> </td>
                         </tr>
                         <tr>
                             <th><span >Grand Total</span></th>
@@ -105,6 +106,7 @@
                         </tr>
 
                         <tr> <th class="rm"></th>
+                            <input type="hidden" class="customer-input" value="{{ customer.id }}">
                             <td id="rm"><button type="submit"  class="btn btn-sm btn-primary">Save Invoice</button></td>
                         </tr>
 
@@ -133,6 +135,23 @@
 
 {% block javascripts %}
 <script>
+   // Get the current date
+   const currentDate = new Date();
+
+  // Define the options for date formatting
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  };
+
+  // Format the date as a string in English
+  const formattedDate = currentDate.toLocaleDateString("en-US", options);
+
+  // Display the formatted date on the HTML page
+  document.getElementById("date").textContent = formattedDate;
+
+
   document.addEventListener("DOMContentLoaded", function() {
     const addRowButton = document.querySelector(".add");
     const itemList = document.getElementById("item-list");
@@ -165,6 +184,7 @@
       const cbmInput = row.querySelector(".cbm-input");
       const priceInput = row.querySelector(".price-input");
       const rateInput = row.querySelector(".rate-input");
+      const id_customer = row.querySelector(".customer-input");
 
       if (event.target === quantityInput || event.target === lengthInput || event.target === widthInput || event.target === heightInput) {
         const quantity = parseFloat(quantityInput.value) || 0;
@@ -173,8 +193,8 @@
         const height = parseFloat(heightInput.value) || 0;
         const rate = parseFloat(rateInput.textContent) || 0;
 
-        const cbm = (quantity * length * width * height) / 1000000;
-        const price = cbm * rate;
+        const cbm = ((length * width * height * quantity) / 1000000);
+        const price = (cbm * rate * quantity);
 
         cbmInput.textContent = cbm.toFixed(2);
         priceInput.textContent = price.toFixed(2);
@@ -186,12 +206,12 @@
     function generateTableRow() {
       const row = document.createElement("tr");
       row.innerHTML =
-        `<td><a class="cut">-</a><input type="text" class="Description-input"></td>` +
-        '<td><input type="number" class="quantity-input" value="1"></td>'+
-        '<td><input type="number" class="length-input"></td>' +
-        '<td><input type="number" class="width-input"></td>' +
-        '<td><input type="number" class="height-input"></td>' +
-        '<td class="cbm-input"></td>' +
+        `<td><a class="cut">-</a><input type="text" class="Description-input required"></td>` +
+        '<td><input type="number" class="quantity-input" required></td>'+
+        '<td><input type="number" class="length-input" required></td>' +
+        '<td><input type="number" class="width-input" required></td>' +
+        '<td><input type="number" class="height-input" required></td>' +
+        `<td class="cbm-input"></td>` +
         `<td class="rate-input">650</td>`+
         `<td class="price-input"></td>`;
 
@@ -200,12 +220,11 @@
 
     function calculateTotals() {
       const rows = itemList.querySelectorAll("tr");
-      let totalPackages = 1;
+      let totalPackages = 0;
       let totalCBM = 0;
       let totalPrice = 0;
 
       rows.forEach(function(row) {
-        if (!row.classList.contains("default-row")) {
           const quantityInput = row.querySelector(".quantity-input");
           const cbmInput = row.querySelector(".cbm-input");
           const priceInput = row.querySelector(".price-input");
@@ -215,59 +234,52 @@
           const price = parseFloat(priceInput.textContent) || 0;
 
           totalPackages += quantity;
-          totalCBM += cbm;
-          totalPrice += price;
-        }
+          totalCBM += cbm ; 
+          totalPrice += price; 
+        
       });
 
       totalPackInput.value = totalPackages;
       totalCBMInput.value = totalCBM.toFixed(2);
       totalPriceInput.value = totalPrice.toFixed(2);
+
     }
 
     const invoiceForm = document.getElementById("invoice-form");
-invoiceForm.addEventListener("submit", function(event) {
-  event.preventDefault();
+    invoiceForm.addEventListener("submit", function(event) {
+    event.preventDefault();
 
-  const rows = itemList.querySelectorAll("tr");
-  const invoiceData = {};
+    const rows = itemList.querySelectorAll("tr");
+    const invoiceData = [];
 
   rows.forEach(function(row) {
-    if (!row.classList.contains("default-row")) {
-      const descriptionInput = row.querySelector(".Description-input");
-      const quantityInput = row.querySelector(".quantity-input");
-      const lengthInput = row.querySelector(".length-input");
-      const widthInput = row.querySelector(".width-input");
-      const heightInput = row.querySelector(".height-input");
-      const cbmInput = row.querySelector(".cbm-input");
-      const rateInput = row.querySelector(".rate-input");
-      const priceInput = row.querySelector(".price-input");
+    const descriptionInput = row.querySelector(".Description-input");
+    const quantityInput = row.querySelector(".quantity-input");
+    const lengthInput = row.querySelector(".length-input");
+    const widthInput = row.querySelector(".width-input");
+    const heightInput = row.querySelector(".height-input");
+    const cbmInput = row.querySelector(".cbm-input");
+    const rateInput = row.querySelector(".rate-input");
+    const priceInput = row.querySelector(".price-input");
+    const customerInput = document.querySelector(".customer-input");
 
-      const productID = descriptionInput.dataset.productID;
+    const item = {
+      item: descriptionInput.value.trim(),
+      quantity: parseFloat(quantityInput.value) || 0,
+      length: parseFloat(lengthInput.value) || 0,
+      width: parseFloat(widthInput.value) || 0,
+      height: parseFloat(heightInput.value) || 0,
+      CBM: parseFloat(cbmInput.textContent) || 0,
+      rate: parseFloat(rateInput.textContent) || 0,
+      price: parseFloat(priceInput.textContent) || 0,
+      id_customer: customerInput.value.trim()
+    };
 
-      if (!invoiceData.hasOwnProperty(productID)) {
-        invoiceData[productID] = {
-          customerID: "{{ customer.id }}",
-          item: descriptionInput.value,
-          quantity: 0,
-          length: parseFloat(lengthInput.value),
-          width: parseFloat(widthInput.value),
-          height: parseFloat(heightInput.value),
-          CBM: 0,
-          rate: parseFloat(rateInput.textContent),
-          price: 0
-        };
-      }
-
-      const quantity = parseInt(quantityInput.value);
-      const cbm = parseFloat(cbmInput.textContent);
-      const price = parseFloat(priceInput.textContent);
-
-      invoiceData[productID].quantity += quantity;
-      invoiceData[productID].CBM += cbm;
-      invoiceData[productID].price += price;
-    }
+    invoiceData.push(item);
   });
+
+
+ console.log("invoiceData: ",invoiceData)
 
   const invoiceItems = Object.values(invoiceData);
 
@@ -281,21 +293,26 @@ invoiceForm.addEventListener("submit", function(event) {
   request.setRequestHeader("Content-Type", "application/json");
   request.setRequestHeader("X-CSRFToken", csrfToken);
   request.onload = function() {
-    if (request.status === 200) {
-      // Handle successful response
-      console.log("Invoice saved successfully!");
-      // Redirect to a success page or perform any additional actions
-    } else {
-      // Handle error response
-      console.error("Failed to save invoice");
-      // Show an error message or perform any additional error handling
-    }
-  };
-  request.onerror = function() {
-    // Handle request error
-    console.error("Failed to send request");
+  if (request.status === 200) {
+    // Handle successful response
+    console.log("Invoice saved successfully!");
+
+    // Create a new Blob from the response data
+    const blob = new Blob([request.response], { type: "application/pdf" });
+
+    // Create a URL for the Blob object
+    const blobUrl = URL.createObjectURL(blob);
+
+    // Open the PDF in a new window or tab
+    window.open(blobUrl);
+
+    // Redirect to a success page or perform any additional actions
+  } else {
+    // Handle error response
+    console.error("Failed to save invoice");
     // Show an error message or perform any additional error handling
-  };
+  }
+};
   request.send(JSON.stringify(invoiceItems));
 });
 

@@ -21,6 +21,7 @@ class Customer(models.Model):
 
 class Invoice(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id_invoice = models.CharField(max_length=100, default="00000000")
     id_customer = models.CharField(max_length=100)
     date = models.DateTimeField(default=timezone.now)
     item = models.CharField(max_length=100)
@@ -31,8 +32,6 @@ class Invoice(models.Model):
     CBM = models.DecimalField(max_digits=10, decimal_places=2)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
     price = models.DecimalField(max_digits=10, decimal_places=2)
-    total_cbm = models.DecimalField(max_digits=10, decimal_places=2)
-    total = models.DecimalField(max_digits=10, decimal_places=2)
 
     
 

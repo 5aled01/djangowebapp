@@ -23,10 +23,16 @@ from django.template import loader
 from django.urls import reverse
 from .models import Customer
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import json
+from .models import Invoice
+from django.utils.crypto import get_random_string
+
+
 import io
 from django.http import FileResponse
 from django.shortcuts import render
-from faker import Faker
 from reportlab.lib.units import inch 
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
@@ -35,7 +41,20 @@ context = {}
 
 @login_required(login_url="/login/")
 def index(request):
-    context = {'segment': 'index'}
+    
+    customer_count = Customer.objects.count()
+
+    today = timezone.now().date()
+    three_days_ago = today - timedelta(days=3)
+    new_customer_count = Customer.objects.filter(created_date__lt=three_days_ago).count()
+
+    # Calculate the percentage
+    if customer_count > 0:
+        percentage = (new_customer_count / customer_count) * 100
+    else:
+        percentage = 0
+
+    context = {'segment': 'index', 'customer_count': customer_count, 'percentage': percentage}
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
@@ -72,8 +91,13 @@ def pages(request):
                 customer_id = request.GET.get('customer_id')
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
+
+        if load_template == 'invoices_detail.html':
+                customer_id = request.GET.get('customer_id')
+                customer = get_object_or_404(Customer, id=customer_id)
+                context['customer'] = customer
         
-        #print('load_template----', load_template)
+        print('load_template----', load_template)
 
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
@@ -123,25 +147,7 @@ def add_customer(request):
     context = {'form': form, 'customers': customers}
     return render(request, 'home/customers.html', context)
 
-def index(request):
-    customer_count = Customer.objects.count()
-    return render(request, 'home/index.html', {'customer_count': customer_count})
 
-def dashboard(request):
-    customer_count = Customer.objects.count()
-    
-    # Calculate the number of customers created within the last 3 days or more
-    today = timezone.now().date()
-    three_days_ago = today - timedelta(days=3)
-    new_customer_count = Customer.objects.filter(created_date__lt=three_days_ago).count()
-
-    # Calculate the percentage
-    if customer_count > 0:
-        percentage = (new_customer_count / customer_count) * 100
-    else:
-        percentage = 0
-    
-    return render(request, 'home/index.html',9)
 
 def delete_customer(request):
     if request.method == 'POST':
@@ -163,69 +169,56 @@ def invoices_detail(request):
             
         print('customer_id----', customer_id)
 
-        return render(request, 'invoices_detail.html', {'customer': customer})
+        return render(request, 'invoices_detail.html', context)
 
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
+
+def generate_invoice_id():
+    timestamp = timezone.now().strftime("%y%m%d%H%M%S")
+    random_string = get_random_string(length=7, allowed_chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+    return f"MRSU{timestamp}{random_string}"
+
 def Invoice_save(request):
-    if request.method == 'POST':
-        form = InvoiceForm(request.POST)
-        if form.is_valid():
-            instance = form.save()  # Save the form data to the database
-            return redirect('success')  # Redirect to a success page or another view
+    if request.method == "POST":
+        invoice_items = json.loads(request.body)
+        invoices = []
+        id = generate_invoice_id()
+        for item in invoice_items:
+            invoice = Invoice(
+                id_invoice = id,
+                id_customer = item["id_customer"],
+                item=item["item"],
+                quantity=item["quantity"],
+                length=item["length"],
+                width=item["width"],
+                height=item["height"],
+                CBM=item["CBM"],
+                rate=item["rate"],
+                price=item["price"],
+            )
+            invoices.append(invoice)
+
+        Invoice.objects.bulk_create(invoices)
+
+        buf = io.BytesIO()
+        c = canvas.Canvas(buf, pagesize=letter)
+        # Create text object
+        text_y = 750
+        for d in invoice_items:
+            c.drawString(100, text_y, f"Item: {d['item']}")
+            c.drawString(200, text_y, f"Quantity: {d['quantity']}")
+            c.drawString(300, text_y, f"Price: {d['price']}")
+            text_y -= 20
+
+        # Finish up
+        c.showPage()
+        c.save()
+        buf.seek(0)
+
+        # Return the generated PDF as a response
+        return FileResponse(buf, as_attachment=True, filename='Invoice.pdf')
     else:
-        form = InvoiceForm(initial={'field_name': 'default_value'})  # Set initial values for the form fields
-
-    return render(request, 'your_template.html', {'form': form})
-
-
-
-
-
-
-def generate_invoice_pdf(request):
-    fake = Faker()
-
-    # Generate fake data
-    data = []
-    for _ in range(10):
-        data.append({
-            'id': fake.random_int(min=1000, max=9999),
-            'id_customer': fake.random_int(min=1000, max=9999),
-            'date': fake.date(),
-            'item': fake.word(),
-            'quantity': fake.random_int(min=1, max=10),
-            'length': fake.random_int(min=10, max=100),
-            'width': fake.random_int(min=10, max=100),
-            'height': fake.random_int(min=10, max=100),
-            'CBM': fake.random_int(min=10, max=100),
-            'rate': fake.random_int(min=10, max=100),
-            'price': fake.random_int(min=10, max=100),
-            'total_cbm': fake.random_int(min=10, max=100),
-            'total': fake.random_int(min=100, max=1000),
-        })
-
-    # Create a PDF document
-    buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=letter)
-
-    # Create text object
-    text_y = 750
-    for d in data:
-        c.drawString(100, text_y, f"Item: {d['item']}")
-        c.drawString(200, text_y, f"Quantity: {d['quantity']}")
-        c.drawString(300, text_y, f"Price: {d['price']}")
-        text_y -= 20
-
-    # Finish up
-    c.showPage()
-    c.save()
-    buf.seek(0)
-
-    # Return the generated PDF as a response
-    return FileResponse(buf, as_attachment=True, filename='Invoice.pdf')
-
-
-    
+        return JsonResponse({"error": "Invalid request method"})
