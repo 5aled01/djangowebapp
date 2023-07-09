@@ -21,6 +21,8 @@ urlpatterns = [
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
     path('invoice_save', views.Invoice_save, name='invoice_save'),
 
+    path('add_container', views.add_container, name='add_container'),
+
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
