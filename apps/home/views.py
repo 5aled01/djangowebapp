@@ -3,51 +3,45 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from ipaddress import summarize_address_range
 from django import template
-import django
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
-from django.views.decorators.csrf import csrf_protect
-from faker import Faker
-from .forms import CustomerForm
-from .models import Customer
+
+from .forms import CustomerForm, ContainerForm
+from .models import Customer, Container
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.postgres.search import SearchVector
 from datetime import datetime
 from datetime import timedelta
 from django.utils import timezone
-from .forms import InvoiceForm
 from django.template import loader
 from django.urls import reverse
 from .models import Customer
 
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 import json
-from .models import Invoice
+from .models import Invoice, Item
 from django.utils.crypto import get_random_string
-from django.db.models import Sum
+
 
 import io
 from django.http import FileResponse
 from django.shortcuts import render
-from reportlab.lib.units import inch 
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
+
 context = {}
 
 
 @login_required(login_url="/login/")
 def index(request):
-    
+
     customer_count = Customer.objects.count()
 
     today = timezone.now().date()
     three_days_ago = today - timedelta(days=3)
-    new_customer_count = Customer.objects.filter(created_date__lt=three_days_ago).count()
+    new_customer_count = Customer.objects.filter(
+        created_date__lt=three_days_ago).count()
 
     # Calculate the percentage
     if customer_count > 0:
@@ -55,7 +49,8 @@ def index(request):
     else:
         percentage = 0
 
-    context = {'segment': 'index', 'customer_count': customer_count, 'percentage': percentage}
+    context = {'segment': 'index',
+               'customer_count': customer_count, 'percentage': percentage}
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
@@ -72,50 +67,34 @@ def pages(request):
             return HttpResponseRedirect(reverse('admin:index'))
         context['segment'] = load_template
 
-        
         if load_template == 'customers.html':
             search_query = request.GET.get('search', '')
-            
+
             if search_query != '':
-                
-                customers = Customer.objects.annotate(search=SearchVector('name', 'phone_number', 'brand', 'partner')).filter(search=search_query)
-            
+
+                customers = Customer.objects.annotate(search=SearchVector(
+                    'name', 'phone_number', 'brand', 'partner')).filter(search=search_query)
+
             else:
                 customers = Customer.objects.all()
-                
+
             paginator = Paginator(customers, per_page=4)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
             context['customers'] = page_obj
 
         if load_template == 'customer_detail.html':
-                customer_id = request.GET.get('customer_id')
-                customer = get_object_or_404(Customer, id=customer_id)
-                context['customer'] = customer
+            customer_id = request.GET.get('customer_id')
+            customer = get_object_or_404(Customer, id=customer_id)
+            context['customer'] = customer
 
         if load_template == 'invoices_detail.html':
                 customer_id = request.GET.get('customer_id')
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
         
-        if load_template == 'invoices_affiche.html':
-            invoice_ids = Invoice.objects.values_list('id_invoice', flat=True).distinct()
-            invoices_list = []
+        print('load_template----', load_template)
 
-            for invoice_id in invoice_ids:
-                invoices = Invoice.objects.filter(id_invoice=invoice_id)
-                total_price = invoices.aggregate(Sum('price')).get('price__sum', 0)
-                invoice_date = invoices.first().date
-                invoice_data = {
-                    'invoice_id': invoice_id,
-                    'total_price': total_price,
-                    'date': invoice_date,
-                }
-                invoices_list.append(invoice_data)
-
-            context['invoices'] = invoices_list
-
-            context['invoices'] = invoices_list
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
@@ -128,6 +107,7 @@ def pages(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
+
 @login_required(login_url="/login/")
 def edit_customer(request):
     customer_id = request.GET.get('customer_id')
@@ -135,16 +115,17 @@ def edit_customer(request):
 
     if request.method == 'POST':
         form = CustomerForm(request.POST, instance=customer)
-        
+
         if form.is_valid():
             form.save()
             messages.success(request, "Customer updated successfully.")
             return redirect('customer_detail', customer_id=customer.id)
     else:
         form = CustomerForm(instance=customer)
-    
+
     context = {'form': form, 'customer': customer}
     return render(request, 'home/customer_detail.html', context)
+
 
 @login_required(login_url="/login/")
 def customer_detail(request, customer_id):
@@ -152,6 +133,7 @@ def customer_detail(request, customer_id):
     form = CustomerForm(instance=customer)
     context = {'form': form, 'customer': customer}
     return render(request, 'home/customer_detail.html', context)
+
 
 @login_required(login_url="/login/")
 def add_customer(request):
@@ -172,14 +154,34 @@ def add_customer(request):
 
 
 
+@login_required(login_url="/login/")
+def add_container(request):
+    if request.method == 'POST':
+        form = ContainerForm(request.POST)
+        
+        if form.is_valid():
+            container = form.save(commit=False)
+            container.created_date = datetime.now()
+            container.save()
+            
+            messages.success(request, "Container added successfully.")
+            return redirect('home/containers.html')
+    else:
+        form = ContainerForm()
+
+    containers = Container.objects.all()
+    context = {'form': form, 'containers': containers}
+    return render(request, 'home/containers.html', context)
+
+
 def delete_customer(request):
     if request.method == 'POST':
         customer_id = request.POST.get('customer_id')
         customer = get_object_or_404(Customer, id=customer_id)
         customer.delete()
         messages.success(request, "Customer deleted successfully.")
-        return redirect('customers.html')  # Redirect to the desired URL after successful deletion
-
+        # Redirect to the desired URL after successful deletion
+        return redirect('customers.html')
 
 
 @login_required(login_url="/login/")
@@ -189,7 +191,7 @@ def invoices_detail(request):
         customer_id = request.GET.get('customer_id')
         customer = get_object_or_404(Customer, id=customer_id)
         context['customer'] = customer
-            
+
         print('customer_id----', customer_id)
 
         return render(request, 'invoices_detail.html', context)
@@ -217,18 +219,28 @@ def invoices_affiche(request):
     
 def generate_invoice_id():
     timestamp = timezone.now().strftime("%y%m%d%H%M%S")
-    random_string = get_random_string(length=7, allowed_chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+    random_string = get_random_string(
+        length=7, allowed_chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
     return f"MRSU{timestamp}{random_string}"
+
 
 def Invoice_save(request):
     if request.method == "POST":
         invoice_items = json.loads(request.body)
-        invoices = []
-        id = generate_invoice_id()
+        totalprice = 0
+        totalcbm = 0
+        totalpack = 0
+        customer = None
+        items = []
+
+        customer = Customer.objects.get(id=invoice_items[0]["id_customer"])
+        invoice = Invoice(customer=customer)
+        invoice.save()  # Save the invoice to obtain the ID
+        
         for item in invoice_items:
-            invoice = Invoice(
-                id_invoice = id,
-                id_customer = item["id_customer"],
+            
+            item_obj = Item(
+                invoice=invoice,
                 item=item["item"],
                 quantity=item["quantity"],
                 length=item["length"],
@@ -236,28 +248,28 @@ def Invoice_save(request):
                 height=item["height"],
                 CBM=item["CBM"],
                 rate=item["rate"],
-                price=item["price"],
+                price=item["price"]
             )
-            invoices.append(invoice)
+            item_obj.save()
 
-        Invoice.objects.bulk_create(invoices)
+            items.append(item_obj)
 
-        buf = io.BytesIO()
-        c = canvas.Canvas(buf, pagesize=letter)
-        # Create text object
-        text_y = 750
-        for d in invoice_items:
-            c.drawString(100, text_y, f"Item: {d['item']}")
-            c.drawString(200, text_y, f"Quantity: {d['quantity']}")
-            c.drawString(300, text_y, f"Price: {d['price']}")
-            text_y -= 20
+            totalprice += item["price"]
+            totalcbm += item["CBM"]
+            totalpack += item["quantity"]
 
-        # Finish up
-        c.showPage()
-        c.save()
-        buf.seek(0)
 
-        # Return the generated PDF as a response
-        return FileResponse(buf, as_attachment=True, filename='Invoice.pdf')
+        context['totalprice'] = totalprice
+        context['totalcbm'] = totalcbm
+        context['totalpack'] = totalpack
+
+        context['customer'] = customer
+        context['invoice'] = invoice
+        context['items'] = items
+
+
+        load_template = 'final_invoice.html'
+        html_template = loader.get_template('home/' + load_template)
+        return HttpResponse(html_template.render(context, request))
     else:
         return JsonResponse({"error": "Invalid request method"})

@@ -1,22 +1,33 @@
-{% extends 'layouts/base.html' %}
+{% extends 'layouts/base.html' %} 
 
-{% block title %}Add Invoice{% endblock title %}
+{% block title %} Add Invoice {% endblock title%} 
 
-{% block content %}
+{% block content %} 
 
 {% load static %}
-        <link rel="stylesheet" type="text/css" href="{% static '/assets/css/style_invoice.css' %}">
-        <link rel="license" href="https://www.opensource.org/licenses/mit-license/">
+<link 
+  rel="stylesheet"
+  type="text/css"
+  href="{% static '/assets/css/style_invoice.css' %}"
+/>
+<link rel="license" href="https://www.opensource.org/licenses/mit-license/" />
 
-<div class="header pb-4 d-flex align-items-center" 
-     style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
+<div
+  class="header pb-4 d-flex align-items-center"
+  style="
+    min-height: 300px;
+    background-image: url(/static/assets/img/theme/containers.jpg);
+    background-size: cover;
+    background-position: center top;
+  "
+>
   <!-- Mask -->
   <span class="mask bg-gradient-default opacity-5"></span>
   <!-- Header container -->
   <div class="container-fluid d-flex align-items-center">
     <div class="row">
       <div class="col-lg-10 col-md-10">
-        <h1 class="display-1 text-white"> 
+        <h1 class="display-1 text-white">
           Add invoice for the customer {{ customer.name }}
         </h1>
       </div>
@@ -25,124 +36,174 @@
 </div>
 <!-- Page content -->
 <div class="container-fluid mt--5">
-    <div class="row">
-        <div class="col">
-          <div class="card">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+          <article>
+            <!--/sinvoice_save-->
+            <form id="invoice-form" action="#" method="POST">
+              {% csrf_token %}
 
-            <div class="card-body">
-                <header>
-                    <address>
-                        <p>FERRY OCEANAIR SHIPPING SERVICES L.L.C</p>
-                        <p>Phone: +971 503 941 062</p>
-                        <p>Dubai Al aweer</p>
-                    </address>
-                    <span><img alt="" src="http://www.jonathantneal.com/examples/invoice/logo.png"><input type="file" accept="image/*"></span>
-                </header>
-                <article><!--/sinvoice_save-->
-                    <form id="invoice-form" action="#" method="POST">
-                        {% csrf_token %}
-                        
-                    <h1>Customer</h1>
-                    <address>
-                        <p>{{ customer.name }}<br>{{ customer.brand }} <br> Phone: +{{ customer.phone_number }} </p>
-                    </address>
-                    <table class="meta">
-                        <tr>
-                            <th><span>Invoice #</span></th>
-                            <td><span>------</span></td>
-                        </tr>
-                        <tr>
-                            <th><span>Date</span></th>
-                            <td><span id="date"></span></td>
-                        </tr>
-                        <tr>
-                            <th><span>Manifest #</span></th>
-                            <td>11</td>
-                        </tr>
-                    </table>
-                    <!-- ... previous code ... -->
+              <h1>Customer</h1>
+              <address>
+                <p>
+                  {{ customer.name }}<br />{{ customer.brand }} <br />
+                  Phone: +{{ customer.phone_number }}
+                </p>
+              </address>
+              <table class="meta">
+                <tr>
+                  <th><span>Invoice #</span></th>
+                  <td><span>------</span></td>
+                </tr>
+                <tr>
+                  <th><span>Date</span></th>
+                  <td><span id="date"></span></td>
+                </tr>
+                <tr>
+                  <th><span>Manifest #</span></th>
+                  <td>
+                    <input
+                      type="number"
+                      class="manifest-input"
+                      id="manifest"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th><span>Augmentation</span></th>
+                  <td>
+                    <select id="aug" name="aug" class="aug-input">
+                      <option value="0">0%</option>
+                      <option value="1">1%</option>
+                      <option value="2">2%</option>
+                      <option value="3">3%</option>
+                      <option value="4">4%</option>
+                      <option value="5">5%</option>
+                      <option value="6">6%</option>
+                      <option value="7">7%</option>
+                      <option value="8">8%</option>
+                    </select>
+                    (Before adding items)
+                  </td>
+                </tr>
+              </table>
+              <!-- ... previous code ... -->
 
-                    <table class="inventory">
-                        <thead>
-                            <tr>
-                                <th><span>Item Description</span></th>
-                                <th><span>Quantity</span></th>
-                                <th><span>Length</span></th>
-                                <th><span>Width</span></th>
-                                <th><span>Height</span></th>
-                                <th><span>CBM</span></th>
-                                <th><span>Rate</span></th>
-                                <th><span>Prince (AED)</span></th>
-                            </tr>
-                        </thead>
+              <table class="inventory">
+                <thead>
+                  <tr>
+                    <th><span>Item Description</span></th>
+                    <th><span>Quantity</span></th>
+                    <th><span>Length</span></th>
+                    <th><span>Width</span></th>
+                    <th><span>Height</span></th>
+                    <th><span>CBM</span></th>
+                    <th><span>Rate</span></th>
+                    <th><span>Prince (AED)</span></th>
+                  </tr>
+                </thead>
 
-                        <tbody id="item-list">
-                            <tr class="default-row">
-                                <td><a class="cut">-</a><input type="text" class="Description-input" required></td>
-                                <td><input type="number" class="quantity-input" required></td>
-                                <td><input type="number" class="length-input" required></td>
-                                <td><input type="number" class="width-input" required></td>
-                                <td><input type="number" class="height-input" required></td>
-                                <td class="cbm-input"></td>
-                                <td class="rate-input">650</td>
-                                <td class="price-input"></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <tbody id="item-list">
+                  <tr class="default-row">
+                    <td>
+                      <a class="cut">-</a
+                      ><input type="text" class="Description-input" required />
+                    </td>
+                    <td>
+                      <input type="number" class="quantity-input" required />
+                    </td>
+                    <td>
+                      <input type="number" class="length-input" required />
+                    </td>
+                    <td>
+                      <input type="number" class="width-input" required />
+                    </td>
+                    <td>
+                      <input type="number" class="height-input" required />
+                    </td>
+                    <td class="cbm-input"></td>
+                    <td class="rate-input">650</td>
+                    <td class="price-input"></td>
+                  </tr>
+                </tbody>
+              </table>
 
-                    <a class="add" >+</a>
-                    <table class="balance">
-                        <tr>
-                            <th><span >Total Packages</span></th>
-                           <td><input type="number" class="totalpack-input" disabled="true" required> </td>
-                        </tr>
-                        <tr>
-                            <th><span >Total CBM</span></th>
-                            <td><input class="totalcbm-input" type="number"  disabled="true" required> </td>
-                        </tr>
-                        <tr>
-                            <th><span >Grand Total</span></th>
-                            <td><input class="totalprice-input" type="number"  disabled="true" required> </td>
-                        </tr>
+              <a class="add">+</a>
+              <table class="balance">
+                <tr>
+                  <th><span>Total Packages</span></th>
+                  <td>
+                    <input
+                      type="number"
+                      class="totalpack-input"
+                      disabled="true"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th><span>Total CBM</span></th>
+                  <td>
+                    <input
+                      class="totalcbm-input"
+                      type="number"
+                      disabled="true"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th><span>Grand Total</span></th>
+                  <td>
+                    <input
+                      class="totalprice-input"
+                      type="number"
+                      disabled="true"
+                      required
+                    />
+                  </td>
+                </tr>
 
-                        <tr> <th class="rm"></th>
-                            <input type="hidden" class="customer-input" value="{{ customer.id }}">
-                            <td id="rm"><button type="submit"  class="btn btn-sm btn-primary">Save Invoice</button></td>
-                        </tr>
-
-                    </table>
-                </form>
-                </article>
-                <aside>
-                    <h1><span>Additional Notes</span></h1>
-                    <div>
-                        <p>Dear valued customers, who will pay by ounce, please pay via Bankili. <br/> <strong>+222 46 61 62 18</strong>
-                        </p>
-                    </div>
-                </aside>
-            </div>
+                <tr>
+                  <th class="rm"></th>
+                  <input
+                    type="hidden"
+                    class="customer-input"
+                    value="{{ customer.id }}"
+                  />
+                  <td id="rm">
+                    <button type="submit" class="btn btn-sm btn-primary">
+                      Save Invoice
+                    </button>
+                  </td>
+                </tr>
+              </table>
+            </form>
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
-</div>
-</div>
-</div>
 
-
-  {% include "includes/footer.html" %}
-{% endblock content %}
+{% include "includes/footer.html" %} {% endblock content %}
 
 <!-- Specific JS goes HERE -->
 <!-- Specific JS goes HERE -->
 
 {% block javascripts %}
 <script>
-   // Get the current date
-   const currentDate = new Date();
+  // Get the current date
+  const currentDate = new Date();
 
   // Define the options for date formatting
   const options = {
     year: "numeric",
     month: "long",
-    day: "numeric"
+    day: "numeric",
   };
 
   // Format the date as a string in English
@@ -151,21 +212,20 @@
   // Display the formatted date on the HTML page
   document.getElementById("date").textContent = formattedDate;
 
-
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", function () {
     const addRowButton = document.querySelector(".add");
     const itemList = document.getElementById("item-list");
     const totalPackInput = document.querySelector(".totalpack-input");
     const totalCBMInput = document.querySelector(".totalcbm-input");
     const totalPriceInput = document.querySelector(".totalprice-input");
 
-    addRowButton.addEventListener("click", function() {
+    addRowButton.addEventListener("click", function () {
       const newRow = generateTableRow();
       itemList.appendChild(newRow);
       calculateTotals();
     });
 
-    itemList.addEventListener("click", function(event) {
+    itemList.addEventListener("click", function (event) {
       if (event.target.classList.contains("cut")) {
         const row = event.target.parentNode.parentNode;
         if (!row.classList.contains("default-row")) {
@@ -175,9 +235,13 @@
       }
     });
 
-    itemList.addEventListener("input", function(event) {
+    itemList.addEventListener("input", function (event) {
       const row = event.target.parentNode.parentNode;
       const quantityInput = row.querySelector(".quantity-input");
+
+      const manifestInput = document.getElementById("manifest");
+      const augInput = document.getElementById("aug");
+
       const lengthInput = row.querySelector(".length-input");
       const widthInput = row.querySelector(".width-input");
       const heightInput = row.querySelector(".height-input");
@@ -186,15 +250,30 @@
       const rateInput = row.querySelector(".rate-input");
       const id_customer = row.querySelector(".customer-input");
 
-      if (event.target === quantityInput || event.target === lengthInput || event.target === widthInput || event.target === heightInput) {
+      if (
+        event.target === quantityInput ||
+        event.target === lengthInput ||
+        event.target === widthInput ||
+        event.target === heightInput ||
+        event.target === augInput ||
+        event.target === manifestInput
+      ) {
         const quantity = parseFloat(quantityInput.value) || 0;
         const length = parseFloat(lengthInput.value) || 0;
         const width = parseFloat(widthInput.value) || 0;
         const height = parseFloat(heightInput.value) || 0;
         const rate = parseFloat(rateInput.textContent) || 0;
 
-        const cbm = ((length * width * height * quantity) / 1000000);
-        const price = (cbm * rate * quantity);
+        const aug = augInput.value || 0;
+        const manifest = parseFloat(manifestInput.value) || 0;
+
+        console.log("aug", aug);
+        console.log("manifest", manifest);
+
+        var cbm = (length * width * height * quantity) / 1000000;
+        cbm = cbm + (cbm * aug) / 100;
+
+        const price = cbm * rate * quantity;
 
         cbmInput.textContent = cbm.toFixed(2);
         priceInput.textContent = price.toFixed(2);
@@ -207,12 +286,12 @@
       const row = document.createElement("tr");
       row.innerHTML =
         `<td><a class="cut">-</a><input type="text" class="Description-input required"></td>` +
-        '<td><input type="number" class="quantity-input" required></td>'+
+        '<td><input type="number" class="quantity-input" required></td>' +
         '<td><input type="number" class="length-input" required></td>' +
         '<td><input type="number" class="width-input" required></td>' +
         '<td><input type="number" class="height-input" required></td>' +
         `<td class="cbm-input"></td>` +
-        `<td class="rate-input">650</td>`+
+        `<td class="rate-input">650</td>` +
         `<td class="price-input"></td>`;
 
       return row;
@@ -224,99 +303,88 @@
       let totalCBM = 0;
       let totalPrice = 0;
 
-      rows.forEach(function(row) {
-          const quantityInput = row.querySelector(".quantity-input");
-          const cbmInput = row.querySelector(".cbm-input");
-          const priceInput = row.querySelector(".price-input");
+      rows.forEach(function (row) {
+        const quantityInput = row.querySelector(".quantity-input");
+        const cbmInput = row.querySelector(".cbm-input");
+        const priceInput = row.querySelector(".price-input");
 
-          const quantity = parseFloat(quantityInput.value) || 0;
-          const cbm = parseFloat(cbmInput.textContent) || 0;
-          const price = parseFloat(priceInput.textContent) || 0;
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const cbm = parseFloat(cbmInput.textContent) || 0;
+        const price = parseFloat(priceInput.textContent) || 0;
 
-          totalPackages += quantity;
-          totalCBM += cbm ; 
-          totalPrice += price; 
-        
+        totalPackages += quantity;
+        totalCBM += cbm;
+        totalPrice += price;
       });
 
       totalPackInput.value = totalPackages;
       totalCBMInput.value = totalCBM.toFixed(2);
       totalPriceInput.value = totalPrice.toFixed(2);
-
     }
 
     const invoiceForm = document.getElementById("invoice-form");
-    invoiceForm.addEventListener("submit", function(event) {
-    event.preventDefault();
+    invoiceForm.addEventListener("submit", function (event) {
+      event.preventDefault();
 
-    const rows = itemList.querySelectorAll("tr");
-    const invoiceData = [];
+      const rows = itemList.querySelectorAll("tr");
+      const invoiceData = [];
 
-  rows.forEach(function(row) {
-    const descriptionInput = row.querySelector(".Description-input");
-    const quantityInput = row.querySelector(".quantity-input");
-    const lengthInput = row.querySelector(".length-input");
-    const widthInput = row.querySelector(".width-input");
-    const heightInput = row.querySelector(".height-input");
-    const cbmInput = row.querySelector(".cbm-input");
-    const rateInput = row.querySelector(".rate-input");
-    const priceInput = row.querySelector(".price-input");
-    const customerInput = document.querySelector(".customer-input");
+      rows.forEach(function (row) {
+        const descriptionInput = row.querySelector(".Description-input");
+        const manifestInput = document.getElementById("manifest");
+        const quantityInput = row.querySelector(".quantity-input");
+        const lengthInput = row.querySelector(".length-input");
+        const widthInput = row.querySelector(".width-input");
+        const heightInput = row.querySelector(".height-input");
+        const cbmInput = row.querySelector(".cbm-input");
+        const rateInput = row.querySelector(".rate-input");
+        const priceInput = row.querySelector(".price-input");
+        const customerInput = document.querySelector(".customer-input");
 
-    const item = {
-      item: descriptionInput.value.trim(),
-      quantity: parseFloat(quantityInput.value) || 0,
-      length: parseFloat(lengthInput.value) || 0,
-      width: parseFloat(widthInput.value) || 0,
-      height: parseFloat(heightInput.value) || 0,
-      CBM: parseFloat(cbmInput.textContent) || 0,
-      rate: parseFloat(rateInput.textContent) || 0,
-      price: parseFloat(priceInput.textContent) || 0,
-      id_customer: customerInput.value.trim()
-    };
+        const item = {
+          item: descriptionInput.value.trim(),
+          quantity: parseFloat(quantityInput.value) || 0,
+          length: parseFloat(lengthInput.value) || 0,
+          width: parseFloat(widthInput.value) || 0,
+          height: parseFloat(heightInput.value) || 0,
+          CBM: parseFloat(cbmInput.textContent) || 0,
+          rate: parseFloat(rateInput.textContent) || 0,
+          price: parseFloat(priceInput.textContent) || 0,
+          manifest: parseFloat(manifestInput.value) || 0,
+          id_customer: customerInput.value.trim(),
+        };
 
-    invoiceData.push(item);
-  });
+        invoiceData.push(item);
+      });
 
+      console.log("invoiceData: ", invoiceData);
 
- console.log("invoiceData: ",invoiceData)
+      const invoiceItems = Object.values(invoiceData);
 
-  const invoiceItems = Object.values(invoiceData);
+      // Send the invoiceItems to the server using AJAX or submit the form to a backend endpoint
+      // Here, we'll use AJAX as an example
 
-  // Send the invoiceItems to the server using AJAX or submit the form to a backend endpoint
-  // Here, we'll use AJAX as an example
+      const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0]
+        .value;
 
-  const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0].value;
-
-  const request = new XMLHttpRequest();
-  request.open("POST", "{% url 'invoice_save' %}");
-  request.setRequestHeader("Content-Type", "application/json");
-  request.setRequestHeader("X-CSRFToken", csrfToken);
-  request.onload = function() {
-  if (request.status === 200) {
-    // Handle successful response
-    console.log("Invoice saved successfully!");
-
-    // Create a new Blob from the response data
-    const blob = new Blob([request.response], { type: "application/pdf" });
-
-    // Create a URL for the Blob object
-    const blobUrl = URL.createObjectURL(blob);
-
-    // Open the PDF in a new window or tab
-    window.open(blobUrl);
-
-    // Redirect to a success page or perform any additional actions
-  } else {
-    // Handle error response
-    console.error("Failed to save invoice");
-    // Show an error message or perform any additional error handling
-  }
-};
-  request.send(JSON.stringify(invoiceItems));
-});
-
-
+      const request = new XMLHttpRequest();
+      request.open("POST", "{% url 'invoice_save' %}");
+      request.setRequestHeader("Content-Type", "application/json");
+      request.setRequestHeader("X-CSRFToken", csrfToken);
+      request.onload = function () {
+        if (request.status === 200) {
+          // Handle successful response
+          console.log("Invoice saved successfully!");
+          document.documentElement.innerHTML = request.responseText;
+          // Redirect to a success page or perform any additional actions
+        } else {
+          // Handle error response
+          console.error("Failed to save invoice");
+          // Show an error message or perform any additional error handling
+        }
+      };
+      request.send(JSON.stringify(invoiceItems));
+    });
   });
 </script>
 {% endblock javascripts %}
