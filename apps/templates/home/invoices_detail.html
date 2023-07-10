@@ -61,11 +61,15 @@
                   <th><span>Date</span></th>
                   <td><span id="date"></span></td>
                 </tr>
-                <tr>
+                <tr> {% if messages %}
+                        {% for message in messages %}
+                                  {{message}}
+                        {% endfor %}
+                      {% endif %}  
                   <th><span>Manifest #</span></th>
                   <td>
                     <input
-                      type="number"
+                      type="text"
                       class="manifest-input"
                       id="manifest"
                       required
@@ -265,7 +269,7 @@
         const rate = parseFloat(rateInput.textContent) || 0;
 
         const aug = augInput.value || 0;
-        const manifest = parseFloat(manifestInput.value) || 0;
+        const manifest = manifestInput.value || 0;
 
         console.log("aug", aug);
         console.log("manifest", manifest);
@@ -350,7 +354,7 @@
           CBM: parseFloat(cbmInput.textContent) || 0,
           rate: parseFloat(rateInput.textContent) || 0,
           price: parseFloat(priceInput.textContent) || 0,
-          manifest: parseFloat(manifestInput.value) || 0,
+          manifest: manifestInput.value || 0,
           id_customer: customerInput.value.trim(),
         };
 

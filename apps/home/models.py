@@ -4,7 +4,6 @@ from django.utils import timezone
 
 
 
-
 class Customer(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100)
@@ -15,10 +14,11 @@ class Customer(models.Model):
 
 class Container(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
-    invoice = models.ForeignKey('Invoice', on_delete=models.CASCADE, related_name='containers',  null=True, blank=True)
+    invoice = models.ManyToManyField('Invoice', related_name='containers')
     created_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=100, default='Just Created')
     size = models.IntegerField(default=20)
+    price = models.IntegerField(default=20)
 
     def save(self, *args, **kwargs):
         if not self.id or not self.pk:
@@ -46,3 +46,4 @@ class Item(models.Model):
     CBM = models.DecimalField(max_digits=10, decimal_places=2)
     rate = models.DecimalField(max_digits=10, decimal_places=2)
     price = models.DecimalField(max_digits=10, decimal_places=2) 
+    created_date = models.DateTimeField(default=timezone.now)

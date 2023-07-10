@@ -1,0 +1,107 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %} Profile {% endblock title %}
+
+{% block content %}
+
+<div class="header pb-4 d-flex align-items-center" 
+     style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-5"></span>
+  <!-- Header container -->
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+      <div class="col-lg-10 col-md-10">
+        <h1 class="display-1 text-white"> 
+          Container {{ container.id }}
+        </h1>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--2">
+  <div class="row">
+    <div class="col-xl-12 order-xl-1">
+      <div class="card">
+        <div class="card-body">
+          
+          
+            <div class="card-header p-4">
+            <div class="float-right"> <h3 class="mb-0">MANIFEST {{container.id}}</h3>
+            {{ container.created_date }}</div>
+            
+            </div>
+            <div class="card-body">
+            <div class="row mb-4">
+            <div class="col-sm-6">
+            
+            </div>
+            <div class="col-sm-6 ">
+            </div>
+            </div>
+            <div class="table-responsive-sm">
+            <table class="table table-striped">
+            <thead>
+            <tr>
+            <th>العلامة او اسم الزبون</th>
+            <th class="right">عدد القطع</th>
+            <th class="center">المقاس</th>
+            <th class="right">الكلفة</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                {% for invoice_summary in invoice_summaries %}
+                    <td class="left strong">{{ invoice_summary.customer_name }}</td>
+                    <td class="right">{{ invoice_summary.total_quantity }}</td>
+                    <td class="center">{{ invoice_summary.total_cbm }}</td>
+                    <td class="right">{{ invoice_summary.total_price }}</td>
+            </tr>
+                {% endfor %}
+            
+            <tr>
+
+                <td class="left strong"></td>
+                <td class="right"><strong>{{ total_quantity }}</strong></td>
+                <td class="center"><strong>{{ total_cbm }}</strong></td>
+                <td class="right" ><strong>{{ total_price }} AED</strong></td>
+            </tr>
+            </tbody>
+            </table>
+            </div>
+            <div class="row">
+            <div class="col-lg-4 col-sm-5">
+            </div>
+            <div class="col-lg-4 col-sm-5 ml-auto">
+            </div>
+            </div>
+            </div>
+            <div class="card-footer bg-white">
+            </div>
+
+            <div class="col-12 text-right">
+              <div class="row">
+                <div class="col-md-10 "> 
+              </div>
+                <div class=" mt-md-0 text-md-right">
+                  <form action="{% url 'delete_container' %}" method="post" onsubmit="return confirm('Are you sure you want to delete this container?');" class="d-inline">
+                    {% csrf_token %}
+                    <input type="hidden" name="container_id" value="{{ container.id }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Delete container</button>
+                    </div>
+                    </div>
+                    </div>
+                  </form>
+                    </div>
+                    </div>
+                    </div>
+                    
+                      </div>
+                    {% include "includes/footer.html" %}
+                    
+                    </div>
+                    {% endblock content %}
+                    
+                    <!-- Specific JS goes HERE --> 
+                    {% block javascripts %}{% endblock javascripts %}

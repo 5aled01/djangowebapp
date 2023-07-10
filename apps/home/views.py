@@ -7,6 +7,7 @@ from django import template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
+from django.db.models import Sum
 
 from .forms import CustomerForm, ContainerForm
 from .models import Customer, Container
@@ -34,20 +35,51 @@ context = {}
 def index(request):
 
     customer_count = Customer.objects.count()
+    total_income= Item.objects.aggregate(total=Sum('price'))['total']
+    total_expences= Container.objects.aggregate(total=Sum('price'))['total']
 
-    today = timezone.now().date()
-    three_days_ago = today - timedelta(days=3)
-    new_customer_count = Customer.objects.filter(
-        created_date__lt=three_days_ago).count()
+    three_days_ago = timezone.now() - timedelta(days=3)
 
+    new_customer_count = Customer.objects.filter(created_date__gte=three_days_ago).count()
+
+    sum_of_prices = Item.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price']
+    sum_of_expences = Container.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price']
+
+
+    if sum_of_prices is None:
+        sum_of_prices = 0
+    
+    if sum_of_expences is None:
+        sum_of_expences = 0
+    
+    if new_customer_count is None:
+        new_customer_count = 0
+    
     # Calculate the percentage
-    if customer_count > 0:
-        percentage = (new_customer_count / customer_count) * 100
+    if new_customer_count > 0 and customer_count > 0:
+        percentage_customer = (new_customer_count / customer_count) * 100
     else:
-        percentage = 0
+        percentage_customer = 0
+
+    if sum_of_prices > 0 and total_income > 0:
+        percentage_income = (sum_of_prices / total_income) * 100
+    else:
+        percentage_income = 0
+    
+    if sum_of_expences > 0 and total_expences > 0:
+        percentage_expences = (sum_of_expences / total_expences) * 100
+    else:
+        percentage_expences = 0
 
     context = {'segment': 'index',
-               'customer_count': customer_count, 'percentage': percentage}
+               'customer_count': customer_count,
+                'percentage_customer': percentage_customer, 
+                'total_income': total_income,
+                'percentage_income': percentage_income,
+                'total_expences': total_expences,
+                'percentage_expences': percentage_expences,
+                
+                }
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
@@ -84,6 +116,44 @@ def pages(request):
             customer_id = request.GET.get('customer_id')
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
+
+        if load_template == 'container_detail.html':
+            container_id = request.GET.get('container_id')
+            container = get_object_or_404(Container, id=container_id)
+            context['container'] = container
+
+            invoices = container.invoice.all()
+            invoice_summaries = []
+
+            total_quantity = 0
+            total_cbm = 0
+            total_price = 0
+            
+            for invoice in invoices:
+                # Get all items related to the invoice
+                items = invoice.items.all()
+                invoice_summary = {
+                    'customer_name': invoice.customer.name,
+                    'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
+                    'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
+                    'total_price': items.aggregate(Sum('price'))['price__sum']
+                 }
+                
+
+                # Calculate and add the quantities, CBM, and price for each item
+                invoice_summaries.append(invoice_summary)
+
+                total_quantity += invoice_summary['total_quantity'] or 0
+                total_cbm += invoice_summary['total_cbm'] or 0
+                total_price += invoice_summary['total_price'] or 0
+            
+            context['invoice_summaries'] = invoice_summaries
+            context['total_quantity'] = total_quantity
+            context['total_cbm'] = total_cbm
+            context['total_price'] = total_price
+
+            return render(request, 'home/container_detail.html', context)
+        
 
         if load_template == 'invoices_detail.html':
             customer_id = request.GET.get('customer_id')
@@ -147,6 +217,12 @@ def customer_detail(request, customer_id):
     context = {'form': form, 'customer': customer}
     return render(request, 'home/customer_detail.html', context)
 
+@login_required(login_url="/login/")
+def container_detail(request, container_id):
+    container = get_object_or_404(Container, id=container_id)
+    context = {'container': container}
+    return render(request, 'home/container_detail.html', context)
+
 
 @login_required(login_url="/login/")
 def add_customer(request):
@@ -195,6 +271,15 @@ def delete_customer(request):
         messages.success(request, "Customer deleted successfully.")
         # Redirect to the desired URL after successful deletion
         return redirect('customers.html')
+
+def delete_container(request):
+    if request.method == 'POST':
+        container_id = request.POST.get('container_id')
+        container = get_object_or_404(Container, id=container_id)
+        container.delete()
+        messages.success(request, "Container deleted successfully.")
+        # Redirect to the desired URL after successful deletion
+        return redirect('containers.html')
 
 
 @login_required(login_url="/login/")
@@ -254,6 +339,20 @@ def Invoice_save(request):
             totalprice += item["price"]
             totalcbm += item["CBM"]
             totalpack += item["quantity"]
+
+            #add create message
+            container, create = Container.objects.get_or_create(id=item["manifest"])
+            print('----------->',container)
+            container.invoice.add(invoice)
+            container.save()
+
+
+            #print('not goood------')
+            #messages.success(request, "Id manifest does not exist.")
+            #load_template = 'invoices_detail.html'
+            #html_template = loader.get_template('home/' + load_template)
+            #return HttpResponse(html_template.render(context, request))
+            
 
 
         context['totalprice'] = totalprice

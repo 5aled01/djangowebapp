@@ -66,8 +66,10 @@
             <thead class="thead-light">
               <tr>
                 <th scope="col" class="sort" data-sort="id_manifest">Manifest id</th>
-                <th scope="col" class="sort" data-sort="id_invoice">---</th>
-                <th scope="col" class="sort" data-sort="created_date">----</th>
+                <th scope="col" class="sort" data-sort="id_size">Size</th>
+                <th scope="col" class="sort" data-sort="created_date">Created date</th>
+                <th scope="col" class="sort" data-sort="created_date">Status</th>
+                <th scope="col" class="sort" data-sort="created_date">Price</th>
                 <th scope="col" class="sort"></th>
               </tr>
             </thead>
@@ -76,15 +78,17 @@
               <tr>
                 <td>{{ container.id }}</td>
                 <td>{{ container.size }}</td>
-                <td>{{ containers.created_date }}</td>
+                <td>{{ container.created_date}}</td>
+                <td>{{ container.status}}</td>
+                <td>{{ container.price}}</td>
                 <td class="text-center">
                   <div class="dropdown">
                     <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <i class="fas fa-ellipsis-v"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                      <a class="dropdown-item" href="/customer_detail.html?customer_id={{ customer.id }}">Modify</a>
-                      <a class="dropdown-item" href="/invoices_detail.html?customer_id={{ customer.id }}">Add Invoices</a>
+                      <a class="dropdown-item" href="/container_detail.html?container_id={{ container.id }}">See Details</a>
+                      <a class="dropdown-item" href="#">Add Invoices</a>
                     </div>
                   </div>
                 </td>
@@ -176,12 +180,20 @@
                       <input type="text" id="input-id" name="id" class="form-control" placeholder="Id Manifest..." required>
                     </div>
                   </div>
-                  <div class="col-lg-6">
+                  <div class="col-lg-2">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-Phone">size</label>
+                      <label class="form-control-label" for="input-Phone">Size</label>
                       <input type="number" id="input-size" name="size" class="form-control" value="20" placeholder="Container size..." required>
                     </div>
                   </div>
+
+                  <div class="col-lg-4">
+                    <div class="form-group">
+                      <label class="form-control-label" for="input-Phone">Price</label>
+                      <input type="number" id="input-price" name="price" class="form-control" value="20" placeholder="Container price..." required>
+                    </div>
+                  </div>
+
                 </div>
               </div>
 

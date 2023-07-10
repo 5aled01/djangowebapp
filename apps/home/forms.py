@@ -56,9 +56,9 @@ class InvoiceForm(forms.ModelForm):
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Item
-        fields = '__all__'
+        fields = ('invoice', 'item', 'quantity', 'length', 'width', 'height', 'CBM', 'rate', 'price')
 
 class ContainerForm(forms.ModelForm):
     class Meta:
         model = Container
-        fields = ('id', 'size')
+        fields = ('id', 'size', 'price')
