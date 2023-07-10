@@ -72,14 +72,14 @@
             <div class="col-12 text-right">
               <div class="row">
                 <div class="col-md-10 ">
-                  <button type="submit" class="btn btn-sm btn-primary ">Edit customer</button> 
+                  <button type="submit" class="btn btn-sm btn-primary " onclick="showLoadingSpinner(this)">Edit customer</button> 
               </div>
           </form>
                 <div class=" mt-md-0 text-md-right">
                   <form action="{% url 'delete_customer' %}" method="post" onsubmit="return confirm('Are you sure you want to delete this customer?');" class="d-inline">
                     {% csrf_token %}
                     <input type="hidden" name="customer_id" value="{{ customer.id }}">
-                    <button type="submit" class="btn btn-sm btn-danger">Delete customer</button>
+                    <button type="submit" class="btn btn-sm btn-danger" onclick="showLoadingSpinner(this)">Delete customer</button>
                     </div>
                     </div>
                     </div>
@@ -87,12 +87,34 @@
                     </div>
                     </div>
                     </div>
-                    
-                      </div>
+                    </div>
                     {% include "includes/footer.html" %}
                     
                     </div>
                     {% endblock content %}
                     
                     <!-- Specific JS goes HERE --> 
-                    {% block javascripts %}{% endblock javascripts %}
+                    {% block javascripts %}
+                    <script>
+                      function showLoadingSpinner(button) {
+                          // Create the loading spinner HTML
+                          var loadingSpinner = '<div id="loading-spinner"><i class="fas fa-circle-notch fa-spin"></i></div>';
+
+                          // Store the original button text
+                          var originalText = button.innerHTML;
+
+                          // Replace the button text with the loading spinner
+                          button.innerHTML = loadingSpinner;
+
+                          // Disable the button to prevent multiple clicks
+                          button.disabled = true;
+
+                          // Submit the form after a delay to simulate processing
+                          setTimeout(function() {
+                            button.innerHTML = originalText;
+                            button.disabled = false;
+                            button.form.submit();
+                          }, 2000); // Change the delay time (in milliseconds) as per your preference
+                        }
+                    </script>
+                    {% endblock javascripts %}

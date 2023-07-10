@@ -4,7 +4,8 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 from django import forms
-from .models import Customer, Invoice, Item, Container
+from .models import Customer
+from .models import Invoice
 
 
 
@@ -24,10 +25,10 @@ class CustomerForm(forms.ModelForm):
             }
         ))
 
-    brand = forms.CharField(
+    partner = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Brand",
+                "placeholder": "Password brand",
                 "class": "form-control"
             }
         ))
@@ -36,7 +37,7 @@ class CustomerForm(forms.ModelForm):
     partner = forms.CharField(
         widget=forms.TextInput(
             attrs={
-                "placeholder": "Partner",
+                "placeholder": "Password partner",
                 "class": "form-control"
             }
         ))
@@ -50,7 +51,12 @@ class CustomerForm(forms.ModelForm):
 class InvoiceForm(forms.ModelForm):
     class Meta:
         model = Invoice
-        fields = '__all__'
+        fields = ['id_customer', 'date', 'item', 'quantity', 'length', 'width', 'height', 'CBM', 'rate', 'price']
+
+    total_cbm = forms.DecimalField(disabled=True, required=False)
+    total = forms.DecimalField(disabled=True, required=False)
+
+
 
 
 class ItemForm(forms.ModelForm):

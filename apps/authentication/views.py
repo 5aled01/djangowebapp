@@ -9,10 +9,7 @@ from django.contrib.auth import authenticate, login
 from .forms import LoginForm, ProfileForm, SignUpForm
 from django.views.decorators.csrf import csrf_protect
 from django.contrib import messages
-from django.contrib.auth.models import User
 
-
-#User.objects.create_user(username='test', password='testtesttest', first_name='test', last_name = 'test', email = 'test@gmail.com')
 
 def login_view(request):
     form = LoginForm(request.POST or None)

@@ -1,3 +1,8 @@
+# -*- encoding: utf-8 -*-
+"""
+Copyright (c) 2019 - present AppSeed.us
+"""
+
 from django.db import models
 import uuid
 from django.utils import timezone
@@ -14,11 +19,10 @@ class Customer(models.Model):
 
 class Container(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
-    invoice = models.ManyToManyField('Invoice', related_name='containers')
+    invoice = models.ForeignKey('Invoice', on_delete=models.CASCADE, related_name='containers',  null=True, blank=True)
     created_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=100, default='Just Created')
     size = models.IntegerField(default=20)
-    price = models.IntegerField(default=20)
 
     def save(self, *args, **kwargs):
         if not self.id or not self.pk:
@@ -27,17 +31,10 @@ class Container(models.Model):
 
 
 class Invoice(models.Model):
-    id = models.CharField(primary_key=True, max_length=100, editable=False)
-    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id_invoice = models.CharField(max_length=100, default="00000000")
+    id_customer = models.CharField(max_length=100)
     date = models.DateTimeField(default=timezone.now)
-
-    def save(self, *args, **kwargs):
-        if not self.id or not self.pk:
-            self.id = 'INVO' + str(uuid.uuid4().fields[-1])[:6]
-        super().save(*args, **kwargs)
-
-class Item(models.Model):
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
     item = models.CharField(max_length=100)
     quantity = models.IntegerField()
     length = models.DecimalField(max_digits=10, decimal_places=2)
