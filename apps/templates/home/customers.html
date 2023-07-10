@@ -53,12 +53,20 @@
       <div class="card">
         <!-- Card header -->
         <div class="card-header border-0">
-          <h3 class="mb-0">List of customers 
-            {% if messages %}
-              {% for message in messages %}
-              <div class="d-flex align-items-center"> <i class="ni ni-check-bold text-green"> </i> <span class="nav-link-text">{{ message }}</span></div>
-              {% endfor %}
-            {% endif %}   
+          <div class="d-flex align-items-center">
+            <h3 class="mb-0 mr-2">List of customers</h3>
+            <div id="loading-spinner" class="d-none">
+              <i class="fas fa-circle-notch fa-spin"></i>
+            </div>
+          </div>
+          {% if messages %}
+            {% for message in messages %}
+            <div class="d-flex align-items-center">
+              <i class="ni ni-check-bold text-green"></i>
+              <span class="nav-link-text">{{ message }}</span>
+            </div>
+            {% endfor %}
+          {% endif %}
         </div>
         <!-- Light table -->
         <div class="table-responsive">
@@ -221,7 +229,14 @@
   <script>
     // Include the following JavaScript code if you want to handle form submission or other actions in the modal
     $(document).ready(function() {
-      // Add any necessary JavaScript code here
+    // Add any necessary JavaScript code here
+    });
+    // Include the following JavaScript code if you want to handle form submission or other actions in the modal
+    $(document).ready(function() {
+      // Show loading spinner when search form is submitted
+      $("#navbar-search-main").submit(function() {
+        $("#loading-spinner").removeClass("d-none");
+      });
     });
   </script>
 {% endblock javascripts %}

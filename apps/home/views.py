@@ -3,6 +3,7 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+from ipaddress import summarize_address_range
 from django import template
 import django
 from django.shortcuts import render, redirect, get_object_or_404
@@ -28,7 +29,7 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from .models import Invoice
 from django.utils.crypto import get_random_string
-
+from django.db.models import Sum
 
 import io
 from django.http import FileResponse
@@ -97,8 +98,24 @@ def pages(request):
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
         
-        print('load_template----', load_template)
+        if load_template == 'invoices_affiche.html':
+            invoice_ids = Invoice.objects.values_list('id_invoice', flat=True).distinct()
+            invoices_list = []
 
+            for invoice_id in invoice_ids:
+                invoices = Invoice.objects.filter(id_invoice=invoice_id)
+                total_price = invoices.aggregate(Sum('price')).get('price__sum', 0)
+                invoice_date = invoices.first().date
+                invoice_data = {
+                    'invoice_id': invoice_id,
+                    'total_price': total_price,
+                    'date': invoice_date,
+                }
+                invoices_list.append(invoice_data)
+
+            context['invoices'] = invoices_list
+
+            context['invoices'] = invoices_list
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
@@ -180,8 +197,24 @@ def invoices_detail(request):
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
+    
+def invoices_affiche(request):
+    invoices = Invoice.objects.values('id_invoice').distinct()
+    invoices_list = []
 
+    for invoice in invoices:
+        invoice_id = invoice['id_invoice']
+        invoice_data = {
+            'invoice_id': invoice_id,
+            'price': Invoice.objects.filter(id_invoice=invoice_id).first().price,
+            'date': Invoice.objects.filter(id_invoice=invoice_id).first().date,
+        }
+        invoices_list.append(invoice_data)
 
+    context = {'invoices': invoices_list}
+    return render(request, 'invoices_affiche.html', context)
+
+    
 def generate_invoice_id():
     timestamp = timezone.now().strftime("%y%m%d%H%M%S")
     random_string = get_random_string(length=7, allowed_chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
