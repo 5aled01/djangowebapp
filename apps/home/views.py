@@ -7,6 +7,10 @@ from django import template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse, HttpResponseRedirect
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.db.models import Q
+import uuid
+
 
 from .forms import CustomerForm, ContainerForm
 from .models import Customer, Container
@@ -19,6 +23,7 @@ from django.utils import timezone
 from django.template import loader
 from django.urls import reverse
 from .models import Customer
+from django.db.models import Sum
 
 from django.http import JsonResponse
 import json
@@ -92,7 +97,26 @@ def pages(request):
                 customer_id = request.GET.get('customer_id')
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
-        
+
+        if load_template == 'invoices_affiche.html':
+            search_query = request.GET.get('search', '')
+
+            invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+
+            if search_query:    
+                invoices = invoices.filter(
+                    Q(customer_id__icontains=search_query) |
+                    Q(id__icontains=search_query) |
+                    Q(date__icontains=search_query)
+                )
+
+            paginator = Paginator(invoices, per_page=4)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+
+            context['invoices'] = page_obj
+            context['search_query'] = search_query
+
         print('load_template----', load_template)
 
         html_template = loader.get_template('home/' + load_template)
@@ -183,7 +207,6 @@ def delete_customer(request):
         # Redirect to the desired URL after successful deletion
         return redirect('customers.html')
 
-
 @login_required(login_url="/login/")
 def invoices_detail(request):
 
@@ -201,22 +224,44 @@ def invoices_detail(request):
         return HttpResponse(html_template.render(context, request))
     
 def invoices_affiche(request):
-    invoices = Invoice.objects.values('id_invoice').distinct()
-    invoices_list = []
+    search_query = request.GET.get('search', '')
 
-    for invoice in invoices:
-        invoice_id = invoice['id_invoice']
-        invoice_data = {
-            'invoice_id': invoice_id,
-            'price': Invoice.objects.filter(id_invoice=invoice_id).first().price,
-            'date': Invoice.objects.filter(id_invoice=invoice_id).first().date,
-        }
-        invoices_list.append(invoice_data)
+    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
-    context = {'invoices': invoices_list}
-    return render(request, 'invoices_affiche.html', context)
+    if search_query:
+        try:
+            price_query = float(search_query)
+            invoices = invoices.filter(
+                Q(total_price=price_query)
+            )
+        except ValueError:
+            try:
+                date_query = datetime.strptime(search_query, "%B %d, %Y, %I:%M %p")
+                invoices = invoices.filter(
+                    Q(date__date=date_query.date())
+                )
+            except ValueError:
+                try:
+                    uuid.UUID(search_query)  # Check if search_query is a valid UUID
+                    invoices = invoices.filter(
+                        Q(customer__id=search_query)
+                    )
+                except ValueError:
+                    invoices = invoices.filter(
+                        Q(id__icontains=search_query)
+                    )
 
-    
+    paginator = Paginator(invoices, per_page=4)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'invoices': page_obj,
+        'search_query': search_query
+    }
+
+    return render(request, 'home/invoices_affiche.html', context)
+   
 def generate_invoice_id():
     timestamp = timezone.now().strftime("%y%m%d%H%M%S")
     random_string = get_random_string(
