@@ -13,7 +13,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.db.models import Sum
 
 from .forms import CustomerForm, ContainerForm
-from .models import Customer, Container
+from .models import Customer, Container, Item
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.postgres.search import SearchVector
@@ -83,7 +83,13 @@ def index(request):
         percentage_expences = 0
 
     context = {'segment': 'index',
-               'customer_count': customer_count, 'percentage': percentage}
+               'customer_count': customer_count,
+                'percentage_customer': percentage_customer, 
+                'total_income': total_income,
+                'percentage_income': percentage_income,
+                'total_expences': total_expences,
+                'percentage_expences': percentage_expences,
+                }
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
@@ -157,30 +163,27 @@ def pages(request):
 
             return render(request, 'home/container_detail.html', context)
         
+        if load_template == 'containers.html':
+            search_query = request.GET.get('search', '')
+
+            if search_query != '':
+
+                containers = Container.objects.annotate(search=SearchVector(
+                    'id', 'created_date', 'size', 'status')).filter(search=search_query)
+
+            else:
+                containers = Container.objects.all()
+
+            paginator = Paginator(containers, per_page=4)
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            context['containers'] = page_obj
 
         if load_template == 'invoices_detail.html':
                 customer_id = request.GET.get('customer_id')
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
         
-        if load_template == 'invoices_affiche.html':
-            invoice_ids = Invoice.objects.values_list('id_invoice', flat=True).distinct()
-            invoices_list = []
-
-            for invoice_id in invoice_ids:
-                invoices = Invoice.objects.filter(id_invoice=invoice_id)
-                total_price = invoices.aggregate(Sum('price')).get('price__sum', 0)
-                invoice_date = invoices.first().date
-                invoice_data = {
-                    'invoice_id': invoice_id,
-                    'total_price': total_price,
-                    'date': invoice_date,
-                }
-                invoices_list.append(invoice_data)
-
-            context['invoices'] = invoices_list
-
-            context['invoices'] = invoices_list
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
@@ -252,14 +255,26 @@ def delete_customer(request):
         return redirect('customers.html')  # Redirect to the desired URL after successful deletion
 
 
-def delete_container(request):
+def add_container(request):
     if request.method == 'POST':
-        container_id = request.POST.get('container_id')
-        container = get_object_or_404(Container, id=container_id)
-        container.delete()
-        messages.success(request, "Container deleted successfully.")
-        # Redirect to the desired URL after successful deletion
-        return redirect('containers.html')
+        form = ContainerForm(request.POST)
+        
+        if form.is_valid():
+            container = form.save(commit=False)
+            container.created_date = datetime.now()
+            container.save()
+            
+            messages.success(request, "Container added successfully.")
+            return redirect('home/containers.html')
+    else:
+        form = ContainerForm()
+
+    containers = Container.objects.all()
+    context = {'form': form, 'containers': containers}
+    return render(request, 'home/containers.html', context)
+
+
+
 
 def delete_container(request):
     if request.method == 'POST':

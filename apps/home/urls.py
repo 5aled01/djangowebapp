@@ -25,6 +25,8 @@ urlpatterns = [
     path('delete_customer', views.delete_customer, name='delete_customer'),
 
 
+    path('add_container', views.add_container, name='add_container'),
+
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
     path('invoice_save', views.Invoice_save, name='invoice_save'),
 
