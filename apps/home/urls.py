@@ -27,7 +27,7 @@ urlpatterns = [
 
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
     path('invoice_save', views.Invoice_save, name='invoice_save'),
-    path('invoices_affiche', views.invoices_affiche, name='invoices_affiche'),
+    path('invoices', views.invoices, name='invoices'),
 
     path('add_container', views.add_container, name='add_container'),
 

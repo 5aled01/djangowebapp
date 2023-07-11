@@ -179,8 +179,10 @@ def pages(request):
             page_obj = paginator.get_page(page_number)
             context['containers'] = page_obj
 
-        if load_template == 'invoices_affiche.html':
+        if load_template == 'invoices.html':
                 search_query = request.GET.get('search', '')
+
+                invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
                 if search_query != '':
                     try:
@@ -204,8 +206,9 @@ def pages(request):
                                 invoices = invoices.filter(
                                     Q(id__icontains=search_query)
                                 )
-                else:
-                        invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+                            except:
+                                invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+
 
                 paginator = Paginator(invoices, per_page=4)
                 page_number = request.GET.get('page')
@@ -353,9 +356,10 @@ def invoices_detail(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
     
-def invoices_affiche(request):
+def invoices(request):
     search_query = request.GET.get('search', '')
 
+    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
     if search_query != '':
         try:
@@ -379,8 +383,8 @@ def invoices_affiche(request):
                     invoices = invoices.filter(
                         Q(id__icontains=search_query)
                     )
-    else:
-            invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+                except:
+                    pass      
 
     paginator = Paginator(invoices, per_page=4)
     page_number = request.GET.get('page')
@@ -389,7 +393,7 @@ def invoices_affiche(request):
     context['invoices'] = page_obj
     context['search_query'] = search_query
 
-    return render(request, 'home/invoices_affiche.html', context)
+    return render(request, 'home/invoices.html', context)
    
 def generate_invoice_id():
     timestamp = timezone.now().strftime("%y%m%d%H%M%S")
