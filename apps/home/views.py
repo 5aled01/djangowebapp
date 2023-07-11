@@ -179,6 +179,42 @@ def pages(request):
             page_obj = paginator.get_page(page_number)
             context['containers'] = page_obj
 
+        if load_template == 'invoices_affiche.html':
+                search_query = request.GET.get('search', '')
+
+                if search_query != '':
+                    try:
+                        price_query = float(search_query)
+                        invoices = invoices.filter(
+                            Q(total_price=price_query)
+                        )
+                    except ValueError:
+                        try:
+                            date_query = datetime.strptime(search_query, "%B %d, %Y, %I:%M %p")
+                            invoices = invoices.filter(
+                                Q(date__date=date_query.date())
+                            )
+                        except ValueError:
+                            try:
+                                uuid.UUID(search_query)  # Check if search_query is a valid UUID
+                                invoices = invoices.filter(
+                                    Q(customer__id=search_query)
+                                )
+                            except ValueError:
+                                invoices = invoices.filter(
+                                    Q(id__icontains=search_query)
+                                )
+                else:
+                        invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+
+                paginator = Paginator(invoices, per_page=4)
+                page_number = request.GET.get('page')
+                page_obj = paginator.get_page(page_number)
+                
+                context['invoices'] = page_obj
+                context['search_query'] = search_query
+
+
         if load_template == 'invoices_detail.html':
                 customer_id = request.GET.get('customer_id')
                 customer = get_object_or_404(Customer, id=customer_id)
@@ -320,9 +356,8 @@ def invoices_detail(request):
 def invoices_affiche(request):
     search_query = request.GET.get('search', '')
 
-    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
-    if search_query:
+    if search_query != '':
         try:
             price_query = float(search_query)
             invoices = invoices.filter(
@@ -344,15 +379,15 @@ def invoices_affiche(request):
                     invoices = invoices.filter(
                         Q(id__icontains=search_query)
                     )
+    else:
+            invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
     paginator = Paginator(invoices, per_page=4)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-
-    context = {
-        'invoices': page_obj,
-        'search_query': search_query
-    }
+    
+    context['invoices'] = page_obj
+    context['search_query'] = search_query
 
     return render(request, 'home/invoices_affiche.html', context)
    
