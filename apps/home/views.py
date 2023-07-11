@@ -12,6 +12,7 @@ from django.views.decorators.csrf import csrf_protect
 from faker import Faker
 from .forms import CustomerForm, ContainerForm
 from .models import Customer, Container, Item
+import matplotlib.pyplot as plt
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
@@ -81,6 +82,7 @@ def index(request):
     else:
         percentage_expences = 0
 
+
     context = {'segment': 'index',
                'customer_count': customer_count,
                 'percentage_customer': percentage_customer, 
@@ -88,6 +90,7 @@ def index(request):
                 'percentage_income': percentage_income,
                 'total_expences': total_expences,
                 'percentage_expences': percentage_expences,
+
                 }
 
     html_template = loader.get_template('home/index.html')
@@ -125,6 +128,27 @@ def pages(request):
             customer_id = request.GET.get('customer_id')
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
+        
+        if load_template == 'invoice_view.html':
+            invoice_id = request.GET.get('invoice_id')
+            invoice = get_object_or_404(Invoice, id=invoice_id)
+
+            invoice_summaries = []
+
+            total_quantity = 0
+            total_cbm = 0
+            total_price = 0
+            print('----', invoice.id)
+                # Get all items related to the invoice
+            items = invoice.items.all()
+         
+            context['invoice_summaries'] = invoice_summaries
+            context['invoice'] = invoice
+            context['customer'] = invoice.customer
+            context['items'] = items 
+            context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
+            context['totalcbm'] = items.aggregate(s=Sum("CBM"))["s"]
+            context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
 
         if load_template == 'container_detail.html':
             container_id = request.GET.get('container_id')

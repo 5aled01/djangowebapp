@@ -3,7 +3,7 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from apps.home import views
 
 urlpatterns = [
@@ -28,6 +28,7 @@ urlpatterns = [
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
     path('invoice_save', views.Invoice_save, name='invoice_save'),
     path('invoices', views.invoices, name='invoices'),
+
 
     path('add_container', views.add_container, name='add_container'),
 
