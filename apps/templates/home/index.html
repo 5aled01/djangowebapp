@@ -140,7 +140,7 @@
               <!-- Chart -->
               <div class="chart">
                 <!-- Chart wrapper -->
-                <canvas id="myChart"></canvas>
+                    <canvas id="myChart"></canvas>
               </div>
             </div>
           </div>
@@ -174,7 +174,7 @@
 
 <!-- Specific JS goes HERE --> 
 {% block javascripts %}
-
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="/static/assets/vendor/chart.js/dist/Chart.min.js"></script>
   <script src="/static/assets/vendor/chart.js/dist/Chart.extension.js"></script>
   <script>
@@ -182,7 +182,7 @@
         var ctx = document.getElementById('myChart').getContext('2d');
         var items = JSON.parse('{{ items|safe }}');
         var labels = items.map(function(item) {
-            return item.item;
+            return item.price;
         });
         var prices = items.map(function(item) {
             return item.price;
@@ -211,5 +211,5 @@
         });
     });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 {% endblock javascripts %}

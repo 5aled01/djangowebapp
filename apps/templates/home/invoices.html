@@ -53,9 +53,9 @@
               <table class="table align-items-center table-flush">
                 <thead class="thead-light">
                   <tr>
-                    <th scope="col" class="sort" data-sort="id_customer">Customer ID</th>
-                    <th scope="col" class="sort" data-sort="date">Date</th>
                     <th scope="col" class="sort" data-sort="id_invoice">Invoice ID</th>
+                    <th scope="col" class="sort" data-sort="date">Date</th>
+                    <th scope="col" class="sort" data-sort="id_customer">Customer ID</th>
                     <th scope="col" class="sort" data-sort="price">Price</th>
                     <th scope="col"></th>
                   </tr>
@@ -63,9 +63,10 @@
                 <tbody>
                   {% for invoice in invoices %}
                     <tr>
-                      <td>{{ invoice.customer_id }}</td>
-                      <td>{{ invoice.date }}</td>
+                      
                       <td>{{ invoice.id }}</td>
+                      <td>{{ invoice.date }}</td>
+                      <td>{{ invoice.customer_id }}</td>
                       <td>{{ invoice.total_price }}</td>
                       <td class="text-center">
                         <div class="dropdown">

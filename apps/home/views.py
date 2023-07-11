@@ -82,7 +82,7 @@ def index(request):
     else:
         percentage_expences = 0
 
-
+    items = Item.objects.all()
     context = {'segment': 'index',
                'customer_count': customer_count,
                 'percentage_customer': percentage_customer, 
@@ -90,7 +90,7 @@ def index(request):
                 'percentage_income': percentage_income,
                 'total_expences': total_expences,
                 'percentage_expences': percentage_expences,
-
+                'items': items
                 }
 
     html_template = loader.get_template('home/index.html')

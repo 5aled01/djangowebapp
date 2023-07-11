@@ -3,12 +3,17 @@ import uuid
 from django.utils import timezone
 
 class Customer(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    id = models.CharField(primary_key=True, max_length=100)
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20)
     brand = models.CharField(max_length=100)
     partner = models.CharField(max_length=100, default='Gemal')
     created_date = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        if not self.id or not self.pk:
+            self.id = 'CUST' + str(uuid.uuid4().fields[-1])[:6]
+        super().save(*args, **kwargs)
 
 class Container(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
