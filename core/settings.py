@@ -18,6 +18,7 @@ SECRET_KEY = config('SECRET_KEY', default='S#perS3crEt_1122')
 DEBUG = config('DEBUG', default=True, cast=bool)
 
 # load production server from .env
+#ALLOWED_HOSTS = ['django-env-14.eba-aa9c3f3c.us-west-2.elasticbeanstalk.com']
 ALLOWED_HOSTS = ['*']
 
 # Application definition
