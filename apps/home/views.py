@@ -13,8 +13,12 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedire
 from django.db.models import Sum
 from django.views.decorators.csrf import csrf_protect
 from faker import Faker
+import plotly.graph_objects as go
+import plotly.io as pio
 from django.conf import settings
 from django.core.files.storage import default_storage
+
+
 from .forms import CustomerForm, ContainerForm
 from .models import Customer, Container, InvoiceImage, Item
 #import matplotlib.pyplot as plt
@@ -104,6 +108,29 @@ def index(request):
                 'percentage_expences': percentage_expences,
                 'items': items
                 }
+    # Extract the required data for the chart
+    dates = [item.created_date for item in items]
+    prices = [item.price for item in items]
+
+    # Create a line chart
+    fig = go.Figure(data=go.Scatter(x=dates, y=prices, mode='lines'))
+
+    # Disable plot options
+    fig.update_layout(
+        showlegend=False,
+        xaxis=dict(showgrid=False),
+        yaxis=dict(showgrid=False),
+        plot_bgcolor='#F8F9FE',  # Set the background color (transparent)
+        paper_bgcolor='#F8F9FE'  # Set the paper color (transparent)
+    )
+
+    fig.update_layout(showlegend=False)
+
+
+    # Convert the chart to HTML
+    chart_html = pio.to_html(fig)
+
+    context['chart_html'] = chart_html
 
     html_template = loader.get_template('home/index.html')
     return HttpResponse(html_template.render(context, request))
@@ -319,6 +346,8 @@ def add_customer(request):
 
 @login_required(login_url="/login/")
 def add_container(request):
+
+    
     if request.method == 'POST':
         form = ContainerForm(request.POST)
         
@@ -336,7 +365,7 @@ def add_container(request):
     context = {'form': form, 'containers': containers}
     return render(request, 'home/containers.html', context)
 
-
+@login_required(login_url="/login/")
 def delete_customer(request):
     if request.method == 'POST':
         customer_id = request.POST.get('customer_id')
@@ -345,27 +374,52 @@ def delete_customer(request):
         messages.success(request, "Customer deleted successfully.")
         return redirect('customers.html')  # Redirect to the desired URL after successful deletion
 
+@login_required(login_url="/login/")
 def add_container(request):
+    
+
+    succ = 0
+    
     if request.method == 'POST':
         form = ContainerForm(request.POST)
         
         if form.is_valid():
             container = form.save(commit=False)
             container.created_date = datetime.now()
-            container.save()
-            
-            messages.success(request, "Container added successfully.")
-            return redirect('home/containers.html')
+            print('---------')
+
+            num_results = Container.objects.filter(id = container.id).count()
+
+            if num_results == 1:
+                messages.success(request, "Container with the provided ID already exists.")
+            else:
+                succ = 1
+                container.save()
+                messages.success(request, "Container added successfully.")
     else:
         form = ContainerForm()
 
     containers = Container.objects.all()
-    context = {'form': form, 'containers': containers}
+
+    paginator = Paginator(containers, per_page=4)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    context['containers'] = page_obj
+
+    if succ == 0:
+        messages.success(request, "Container with the provided ID already exists.")
+
+
+    print('======',succ)
+    context['succ'] = succ
+    context['form'] = form
+    
     return render(request, 'home/containers.html', context)
+    
 
 
 
-
+@login_required(login_url="/login/")
 def delete_container(request):
     if request.method == 'POST':
         container_id = request.POST.get('container_id')
@@ -392,6 +446,9 @@ def invoices_detail(request):
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
     
+
+
+@login_required(login_url="/login/")
 def invoices(request):
     search_query = request.GET.get('search', '')
 
@@ -430,14 +487,15 @@ def invoices(request):
     context['search_query'] = search_query
 
     return render(request, 'home/invoices.html', context)
-   
+
+@login_required(login_url="/login/")   
 def generate_invoice_id():
     timestamp = timezone.now().strftime("%y%m%d%H%M%S")
     random_string = get_random_string(
         length=7, allowed_chars="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
     return f"MRSU{timestamp}{random_string}"
 
-
+@login_required(login_url="/login/")
 def Invoice_save(request):
     if request.method == "POST":
         invoice_items = json.loads(request.body)

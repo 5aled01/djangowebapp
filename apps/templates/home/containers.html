@@ -51,10 +51,25 @@
 <div class="card">
 <!-- Card header -->
 <div class="card-header border-0">
-<h3 class="mb-0">List of containers 
+<h3 class="mb-0">List of containers </h3>
+
+
+      
   {% if messages %}
     {% for message in messages %}
-    <div class="d-flex align-items-center"> <i class="ni ni-check-bold text-green"> </i> <span class="nav-link-text">{{ message }}</span></div>
+
+    {% if succ == 1 %} 
+    <i class="ni ni-check-bold text-green"> </i>
+    {% endif %} 
+
+    {% if succ == 0 %} 
+    <i class="ni ni-fat-remove text-red"> </i>
+    {% endif %}
+
+    <div class="d-flex align-items-center"> 
+      
+
+      <span class="nav-link-text">{{ message }}</span></div>
     {% endfor %}
   {% endif %}   
 </div>
@@ -86,7 +101,6 @@
     </a>
     <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
 <a class="dropdown-item" href="/container_detail.html?container_id={{ container.id }}">See Details</a>
-<a class="dropdown-item" href="#">Add Invoices</a>
 </div>
 </div>
 </td>
@@ -129,11 +143,9 @@
 </li>
 {% endif %}
 {% endfor %}
+
 {% if containers.has_next %}
-<a class="dropdown-item" href="/container_detail.html?container_id={{ container.id }}">See Details</a>
-<a class="dropdown-item" href="#">Add Invoices</a>
-</div>
-</div>
+
 <li class="page-item">
   <a class="page-link" href="?page={{ containers.next_page_number }}">
     <i class="fas fa-angle-right"></i>
@@ -181,22 +193,22 @@
                       <input type="text" id="input-id" name="id" class="form-control" placeholder="Id Manifest..." required>
                     </div>
                   </div>
-<div class="col-lg-2">
-  <div class="form-group">
-    <label class="form-control-label" for="input-Phone">size</label>
-    <input type="number" id="input-size" name="size" class="form-control" value="20" placeholder="Container size..." required>
-  </div>
-</div>
+              <div class="col-lg-2">
+                <div class="form-group">
+                  <label class="form-control-label" for="input-Phone">size</label>
+                  <input type="number" id="input-size" name="size" class="form-control" value="20" placeholder="Container size..." required>
+                </div>
+              </div>
 
-<div class="col-lg-4">
-  <div class="form-group">
-    <label class="form-control-label" for="input-Phone">Price</label>
-    <input type="number" id="input-price" name="price" class="form-control" value="20" placeholder="Container price..." required>
-  </div>
-</div>
+              <div class="col-lg-4">
+                <div class="form-group">
+                  <label class="form-control-label" for="input-Phone">Price</label>
+                  <input type="number" id="input-price" name="price" class="form-control" value="20" placeholder="Container price..." required>
+                </div>
+              </div>
 
-</div>
-</div>
+              </div>
+              </div>
             <!-- Form fields for adding a new customer -->
           
           </div>
