@@ -3,111 +3,66 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
-import os
-import zipfile
+
+# -*- encoding: utf-8 -*-
+"""
+Copyright (c) 2019 - present AppSeed.us
+"""
+
 from django import template
-from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
-from django.db.models import Sum
-from django.views.decorators.csrf import csrf_protect
-from faker import Faker
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
+#from django.views.decorators.csrf import csrf_protect
 import plotly.graph_objects as go
 import plotly.io as pio
-from django.conf import settings
-from django.core.files.storage import default_storage
-
-
 from .forms import CustomerForm, ContainerForm
-from .models import Customer, Container, InvoiceImage, Item
-#import matplotlib.pyplot as plt
-from django.http import HttpResponse, JsonResponse
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad, unpad 
-import base64
-from Crypto.Random import get_random_bytes
-from io import BytesIO
-from PIL import Image
 
-from django.contrib.postgres.search import SearchQuery, SearchRank
-from django.db.models import Q
 import uuid
-
 from django.core.paginator import Paginator
 from django.contrib import messages
 from django.contrib.postgres.search import SearchVector
-from datetime import datetime
-from datetime import timedelta
+from datetime import datetime, timedelta
 from django.utils import timezone
 from django.template import loader
 from django.urls import reverse
-from .models import Customer
-from django.db.models import Sum
-
-from django.http import JsonResponse
+from django.db.models import Sum, Q
 import json
-from .models import Invoice, Item
 from django.utils.crypto import get_random_string
-
-
-import io
-from django.http import FileResponse
-from django.shortcuts import render
+from .models import Customer, Container, InvoiceImage, Item, Invoice
 
 context = {}
 
-
 @login_required(login_url="/login/")
 def index(request):
-    
     customer_count = Customer.objects.count()
-    total_income= Item.objects.aggregate(total=Sum('price'))['total']
-    total_expences= Container.objects.aggregate(total=Sum('price'))['total']
+    total_income = Item.objects.aggregate(total=Sum('price'))['total'] or 0
+    total_expenses = Container.objects.aggregate(total=Sum('price'))['total'] or 0
 
     three_days_ago = timezone.now() - timedelta(days=3)
 
     new_customer_count = Customer.objects.filter(created_date__gte=three_days_ago).count()
 
-    sum_of_prices = Item.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price']
-    sum_of_expences = Container.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price']
+    sum_of_prices = Item.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price'] or 0
+    sum_of_expenses = Container.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price'] or 0
 
-
-    if sum_of_prices is None:
-        sum_of_prices = 0
-    
-    if sum_of_expences is None:
-        sum_of_expences = 0
-    
-    if new_customer_count is None:
-        new_customer_count = 0
- 
     # Calculate the percentage
-    if new_customer_count > 0 and customer_count > 0:
-        percentage_customer = (new_customer_count / customer_count) * 100
-    else:
-        percentage_customer = 0
-
-    if sum_of_prices > 0 and total_income > 0:
-        percentage_income = (sum_of_prices / total_income) * 100
-    else:
-        percentage_income = 0
-    
-    if sum_of_expences > 0 and total_expences > 0:
-        percentage_expences = (sum_of_expences / total_expences) * 100
-    else:
-        percentage_expences = 0
+    percentage_customer = (new_customer_count / customer_count) * 100 if customer_count > 0 else 0
+    percentage_income = (sum_of_prices / total_income) * 100 if total_income > 0 else 0
+    percentage_expenses = (sum_of_expenses / total_expenses) * 100 if total_expenses > 0 else 0
 
     items = Item.objects.all()
-    context = {'segment': 'index',
-               'customer_count': customer_count,
-                'percentage_customer': percentage_customer, 
-                'total_income': total_income,
-                'percentage_income': percentage_income,
-                'total_expences': total_expences,
-                'percentage_expences': percentage_expences,
-                'items': items
-                }
+    context = {
+        'segment': 'index',
+        'customer_count': customer_count,
+        'percentage_customer': percentage_customer,
+        'total_income': total_income,
+        'percentage_income': percentage_income,
+        'total_expenses': total_expenses,
+        'percentage_expenses': percentage_expenses,
+        'items': items
+    }
+
     # Extract the required data for the chart
     dates = [item.created_date for item in items]
     prices = [item.price for item in items]
@@ -126,14 +81,12 @@ def index(request):
 
     fig.update_layout(showlegend=False)
 
-
     # Convert the chart to HTML
     chart_html = pio.to_html(fig)
 
     context['chart_html'] = chart_html
 
-    html_template = loader.get_template('home/index.html')
-    return HttpResponse(html_template.render(context, request))
+    return render(request, 'home/index.html', context)
 
 
 @login_required(login_url="/login/")
