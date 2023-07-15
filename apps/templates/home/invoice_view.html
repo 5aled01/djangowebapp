@@ -1,189 +1,329 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
+<head>
+  <meta charset="utf-8" />
+  <title>invoice card - Bootdey.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style type="text/css">
+    body {
+      margin-top: 20px;
+      background-color: #eee;
+    }
 
-    <title>invoice card - Bootdey.com</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <style type="text/css">
-      body {
-        margin-top: 20px;
-        background-color: #eee;
-      }
+    .card {
+      box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
+    }
 
-      .card {
-        box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
-      }
-      .card {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        min-width: 0;
-        word-wrap: break-word;
-        background-color: #fff;
-        background-clip: border-box;
-        border: 0 solid rgba(0, 0, 0, 0.125);
-        border-radius: 1rem;
-      }
-    </style>
-  </head>
-  <body>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
-      integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA="
-      crossorigin="anonymous"
-    />
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="card">
-            <div class="card-body">
-              <div class="invoice-title">
-                <div class="mb-4">
-                  <h2 class="mb-1 text-muted">
-                    FERRY OCEANAIR SHIPPING SERVICES L.L.C
-                  </h2>
-                </div>
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      word-wrap: break-word;
+      background-color: #fff;
+      background-clip: border-box;
+      border: 0 solid rgba(0, 0, 0, 0.125);
+      border-radius: 1rem;
+    }
+
+    #image-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .imported-image {
+      max-width: 200px;
+      display: block;
+      margin: 5px;
+      transition: transform 0.3s;
+    }
+
+    .imported-image.enlarged {
+      transform: scale(3);
+    }
+  </style>
+</head>
+<body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
+    integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="invoice-title">
+              <div class="mb-4">
+                <h2 class="mb-1 text-muted">
+                  FERRY OCEANAIR SHIPPING SERVICES L.L.C
+                </h2>
+              </div>
+              <div class="text-muted">
+                <p class="mb-1">Dubai Al aweer</p>
+                <p>
+                  <i class="uil uil-phone me-1"></i>Tel: (+971) 503-941-062
+                </p>
+              </div>
+              <img src="/static/assets/img/theme/cmi.png" style="display: block;" height="83" width="84" />
+            </div>
+            <hr class="my-4" />
+            <div class="row">
+              <div class="col-sm-6">
                 <div class="text-muted">
-                  <p class="mb-1">Dubai Al aweer</p>
-                  <p>
-                    <i class="uil uil-phone me-1"></i>Tel: (+971) 503-941-062
-                  </p>
-                </div>
-                <img
-                  src="/static/assets/img/theme/cmi.png"
-                  style="display: block;"
-                  height="83"
-                  width="84"
-                />
-              </div>
-              <hr class="my-4" />
-              <div class="row">
-                <div class="col-sm-6">
-                  <div class="text-muted">
-                    <h5 class="font-size-15 mb-3">Billed To:</h5>
-                    <h5 class="font-size-15 mb-2">{{ customer.name }}</h5>
-                    <p>Phone: {{ customer.phone_number }}</p>
-                  </div>
-                </div>
-
-                <div class="col-sm-6">
-                  <div class="text-muted text-sm-end">
-                    <div>
-                      <h5 class="font-size-15 mb-1">Invoice No:</h5>
-                      <p>#{{ invoice.id }}</p>
-                    </div>
-                    <div class="mt-4">
-                      <h5 class="font-size-15 mb-1">Invoice Date:</h5>
-                      <p>{{ invoice.date }}</p>
-                    </div>
-                  </div>
+                  <h5 class="font-size-15 mb-3">Billed To:</h5>
+                  <h5 class="font-size-15 mb-2">{{ customer.name }}</h5>
+                  <p>Phone: {{ customer.phone_number }}</p>
                 </div>
               </div>
 
-              <div class="py-2">
-                <h5 class="font-size-15">Order Summary</h5>
-                <div class="table-responsive">
-                  <table
-                    class="table align-middle table-nowrap table-centered mb-0"
-                  >
-                    <thead>
-                      <tr>
-                        <th>Item</th>
-                        <th>Quantity</th>
-                        <th>Length</th>
-                        <th>Width</th>
-                        <th>Height</th>
-                        <th>CBM</th>
-                        <th>Rate</th>
-                        <th class="text-end" style="width: 120px;">Price (AED)</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {% for invoice in items %}
-                      <tr>
-                        <td>
-                          <div>
-                            <h5 class="text-truncate font-size-14 mb-1">
-                              {{ invoice.item }}
-                            </h5>
-                          </div>
-                        </td>
-                        <td>{{invoice.quantity}}</td>
-                        <td>{{ invoice.length }}</td>
-                        <td>{{ invoice.width }}</td>
-                        <td>{{ invoice.height }}</td>
-                        <td>{{ invoice.CBM }}</td>
-                        <td>{{ invoice.rate }}</td>
-                        <td class="text-end">{{ invoice.price }}</td>
-                      </tr>
-                      {% endfor %}
+              <div class="col-sm-6">
+                <div class="text-muted text-sm-end">
+                  <div>
+                    <h5 class="font-size-15 mb-1">Invoice No:</h5>
+                    <p>#{{ invoice.id }}</p>
+                  </div>
+                  <div class="mt-4">
+                    <h5 class="font-size-15 mb-1">Invoice Date:</h5>
+                    <p>{{ invoice.date }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-                      <tr>
-                        <th scope="row" colspan="7" class="text-end">
-                          Total Packages
-                        </th>
-                        <td class="text-end">{{ totalpack }}</td>
-                      </tr>
+            <div class="py-2">
+              <h5 class="font-size-15">Order Summary</h5>
+              <div class="table-responsive">
+                <table class="table align-middle table-nowrap table-centered mb-0">
+                  <thead>
+                    <tr>
+                      <th>Item</th>
+                      <th>Quantity</th>
+                      <th>Length</th>
+                      <th>Width</th>
+                      <th>Height</th>
+                      <th>CBM</th>
+                      <th>Rate</th>
+                      <th class="text-end" style="width: 120px;">Price (AED)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for invoice in items %}
+                    <tr>
+                      <td>
+                        <div>
+                          <h5 class="text-truncate font-size-14 mb-1">
+                            {{ invoice.item }}
+                          </h5>
+                        </div>
+                      </td>
+                      <td>{{invoice.quantity}}</td>
+                      <td>{{ invoice.length }}</td>
+                      <td>{{ invoice.width }}</td>
+                      <td>{{ invoice.height }}</td>
+                      <td>{{ invoice.CBM }}</td>
+                      <td>{{ invoice.rate }}</td>
+                      <td class="text-end">{{ invoice.price }}</td>
+                    </tr>
+                    {% endfor %}
 
-                      <tr>
-                        <th scope="row" colspan="7" class="border-0 text-end">
-                          Total CBM
-                        </th>
-                        <td class="border-0 text-end">
-                          {{ totalcbm }}
-                        </td>
-                      </tr>
+                    <tr>
+                      <th scope="row" colspan="7" class="text-end">
+                        Total Packages
+                      </th>
+                      <td class="text-end">{{ totalpack }}</td>
+                    </tr>
 
-                      <tr>
-                        <th scope="row" colspan="7" class="border-0 text-end">
-                          Grand Total
-                        </th>
-                        <td class="border-0 text-end">
-                          <strong><p class="m-0 fw-semibold">{{totalprice}}</p></strong>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                    <tr>
+                      <th scope="row" colspan="7" class="border-0 text-end">
+                        Total CBM
+                      </th>
+                      <td class="border-0 text-end">
+                        {{ totalcbm }}
+                      </td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row" colspan="7" class="border-0 text-end">
+                        Grand Total
+                      </th>
+                      <td class="border-0 text-end">
+                        <strong><p class="m-0 fw-semibold">{{totalprice}}</p></strong>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div>
+                يرجى من زبنائنا الكرام من من سيدفع بالأوقية الدفع عن طريق
+                بنكيلي
+                <img src="/static/assets/img/theme/bankili.png" style="display: block;" height="83" width="84" />
+                (+222) 46 61 62 18
+              </div>
+              <div class="d-print-none mt-4">
+                <div class="float-end">
+                  <a href="javascript:window.print()" class="btn btn-success me-1">
+                    <i class="fa fa-print"></i>
+                  </a>
                 </div>
                 <div>
-                  يرجى من زبنائنا الكرام من من سيدفع بالأوقية الدفع عن طريق
-                  بنكيلي
-                  <img
-                    src="/static/assets/img/theme/bankili.png"
-                    style="display: block;"
-                    height="83"
-                    width="84"
-                  />
-                  (+222) 46 61 62 18
-                </div>
-
-                <div class="d-print-none mt-4">
-                  <div class="float-end">
-                    <a
-                      href="javascript:window.print()"
-                      class="btn btn-success me-1"
-                      ><i class="fa fa-print"></i
-                    ></a>
+                  <div id="image-container" class="d-flex flex-wrap justify-content-center align-items-center">
+                    {% if images %}
+                      {% for img in images %}
+                        <img src="{{ img.image.url }}" class="imported-image" onclick="enlargeImage(this)" />
+                      {% endfor %}
+                    {% else %}
+                      <p>No images found.</p>
+                    {% endif %}
                   </div>
+                  <input type="file" id="image-input" accept="image/*" style="display: none;" />
+                  <div id="invoice-details" data-invoice-id="{{ invoice.id }}"></div>
+                  {% csrf_token %}
+                  <button id="add-image-btn" class="btn btn-primary me-1">
+                    <i class="fa fa-plus" ></i> Import Image
+                  </button>
+                  <button id="save-images-btn" class="btn btn-primary">
+                    Save Images
+                  </button>
                 </div>
+              </div>
               </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <script
-      data-cfasync="false"
-      src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
-    ></script>
-    <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="text/javascript"></script>
-  </body>
+  </div>
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript">
+    let selectedFiles = [];
+
+    function dataURItoBlob(dataURI) {
+      const byteString = atob(dataURI.split(',')[1]);
+      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
+      const arrayBuffer = new ArrayBuffer(byteString.length);
+      const uint8Array = new Uint8Array(arrayBuffer);
+      for (let i = 0; i < byteString.length; i++) {
+        uint8Array[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([arrayBuffer], { type: mimeString });
+      return blob;
+    }
+
+    const addImageBtn = document.getElementById('add-image-btn');
+    const imageContainer = document.getElementById('image-container');
+    const imageInput = document.getElementById('image-input');
+    const saveImagesBtn = document.getElementById('save-images-btn');
+    const invoiceId = document.getElementById('invoice-details').dataset.invoiceId;
+    const csrfToken = "{{ csrf_token }}";
+
+    addImageBtn.addEventListener('click', () => {
+      imageInput.click();
+    });
+
+    imageInput.addEventListener('change', (event) => {
+      selectedFiles = Array.from(event.target.files);
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const reader = new FileReader();
+
+        reader.onload = () => {
+          const imageUrl = reader.result;
+          const imageElement = document.createElement('img');
+          imageElement.src = imageUrl;
+          imageElement.classList.add('imported-image');
+          imageElement.width = 120;
+          imageContainer.appendChild(imageElement);
+
+          // Add click event listener to the image element
+          imageElement.addEventListener('click', function() {
+            enlargeImage(this);
+          });
+        };
+
+        if (file) {
+          reader.readAsDataURL(file);
+        }
+      }
+    });
+
+    saveImagesBtn.addEventListener('click', () => {
+      const formData = new FormData();
+      formData.append('invoice_id', invoiceId);
+
+      const imageElements = imageContainer.querySelectorAll('.imported-image');
+      imageElements.forEach((imageElement, index) => {
+        const file = dataURItoBlob(imageElement.src);
+        const fileName = `image${index + 1}.${file.type.split('/')[1]}`;
+        formData.append('images', file, fileName);
+      });
+
+      fetch('/save_images', {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrfToken,
+        },
+        body: formData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log('Invoice images saved successfully');
+            displaySavedImages();
+          } else {
+            console.error('Error:', response.statusText);
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+
+    function displayInvoiceImages() {
+      const invoiceId = '{{ invoice.id }}';  // Replace with the actual invoice ID
+
+      fetch(`/get_invoice_images?invoice_id=${invoiceId}`, {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': '{{ csrf_token }}',  // Replace with the actual CSRF token
+        },
+      })
+        .then((response) => response.json())
+        .then((imageUrls) => {
+          const imageContainer = document.getElementById('image-container');
+
+          // Clear the existing images
+          imageContainer.innerHTML = '';
+
+          // Add the new images
+          imageUrls.forEach((imageUrl) => {
+            const imageElement = document.createElement('img');
+            imageElement.src = imageUrl;
+            imageElement.classList.add('imported-image');
+            imageElement.width = 120;
+
+            // Add click event listener to the image element
+            imageElement.addEventListener('click', function() {
+              enlargeImage(this);
+            });
+
+            imageContainer.appendChild(imageElement);
+          });
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+
+    // Call the function to display the images when the page loads
+    window.addEventListener('DOMContentLoaded', displayInvoiceImages);
+
+    function enlargeImage(imageElement) {
+      imageElement.classList.toggle('enlarged');
+    }
+  </script>
+</body>
 </html>

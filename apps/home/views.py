@@ -3,16 +3,28 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import os
+import zipfile
 from django import template
+from django.core.files.base import ContentFile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect
 from django.db.models import Sum
 from django.views.decorators.csrf import csrf_protect
 from faker import Faker
+from django.conf import settings
+from django.core.files.storage import default_storage
 from .forms import CustomerForm, ContainerForm
-from .models import Customer, Container, Item
-import matplotlib.pyplot as plt
+from .models import Customer, Container, InvoiceImage, Item
+#import matplotlib.pyplot as plt
+from django.http import HttpResponse, JsonResponse
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad 
+import base64
+from Crypto.Random import get_random_bytes
+from io import BytesIO
+from PIL import Image
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Q
@@ -489,3 +501,31 @@ def Invoice_save(request):
         return HttpResponse(html_template.render(context, request))
     else:
         return JsonResponse({"error": "Invalid request method"})
+
+
+def save_images(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        images = request.FILES.getlist('images')
+
+        for image in images:
+            invoice_image = InvoiceImage(invoice_id=invoice_id, image=image)
+            invoice_image.save()
+
+        return JsonResponse({'message': 'Images saved successfully'})
+    return JsonResponse({'message': 'Invalid request method'}, status=400)
+
+
+def get_invoice_images(request):
+    if request.method == 'GET':
+        invoice_id = request.GET.get('invoice_id')
+        
+
+        try:
+            images = InvoiceImage.objects.filter(invoice_id=invoice_id)
+            image_urls = [image.image.url for image in images]
+            return JsonResponse(image_urls, safe=False)
+        except InvoiceImage.DoesNotExist:
+            return JsonResponse([], safe=False)
+
+    return JsonResponse({'message': 'Invalid request method'}, status=400)

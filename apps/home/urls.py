@@ -3,8 +3,10 @@
 Copyright (c) 2019 - present AppSeed.us
 """
 
+from django.conf.urls.static import static
 from django.urls import path, re_path, include
 from apps.home import views
+from core import settings
 
 urlpatterns = [
 
@@ -28,12 +30,12 @@ urlpatterns = [
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
     path('invoice_save', views.Invoice_save, name='invoice_save'),
     path('invoices', views.invoices, name='invoices'),
-
-
-    path('add_container', views.add_container, name='add_container'),
+    path('save_images', views.save_images, name='save_images'),
+    path('get_invoice_images', views.get_invoice_images, name='get_invoice_images'),
 
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
-    
 ]
+if settings.DEBUG:  # new
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
