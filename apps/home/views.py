@@ -121,7 +121,7 @@ def index(request):
         xaxis=dict(showgrid=False),
         yaxis=dict(showgrid=False),
         plot_bgcolor='#F8F9FE',  # Set the background color (transparent)
-        paper_bgcolor='#F8F9FE'  # Set the paper color (transparent)
+        paper_bgcolor='#F8F9FE',  # Set the paper color (transparent)
     )
 
     fig.update_layout(showlegend=False)

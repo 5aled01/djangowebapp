@@ -51,8 +51,12 @@
 <div class="card">
 <!-- Card header -->
 <div class="card-header border-0">
-<h3 class="mb-0">List of containers </h3>
-
+  <div class="d-flex align-items-center">
+    <h3 class="mb-0 mr-2">List of containers </h3>
+<div id="loading-spinner" class="d-none">
+  <i class="fas fa-circle-notch fa-spin"></i>
+  </div>
+</div>
 
       
   {% if messages %}
@@ -231,5 +235,11 @@
   $(document).ready(function() {
     // Add any necessary JavaScript code here
   });
+  $(document).ready(function() {
+      // Show loading spinner when search form is submitted
+      $("#navbar-search-main").submit(function() {
+        $("#loading-spinner").removeClass("d-none");
+      });
+    });
 </script>
 {% endblock javascripts %}
