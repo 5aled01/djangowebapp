@@ -64,27 +64,27 @@ def index(request):
     }
 
     # Extract the required data for the chart
-    dates = [item.created_date for item in items]
-    prices = [item.price for item in items]
+    #dates = [item.created_date for item in items]
+    #prices = [item.price for item in items]
 
     # Create a line chart
-    fig = go.Figure(data=go.Scatter(x=dates, y=prices, mode='lines'))
+    #fig = go.Figure(data=go.Scatter(x=dates, y=prices, mode='lines'))
 
     # Disable plot options
-    fig.update_layout(
-        showlegend=False,
-        xaxis=dict(showgrid=False),
-        yaxis=dict(showgrid=False),
-        plot_bgcolor='#F8F9FE',  # Set the background color (transparent)
-        paper_bgcolor='#F8F9FE',  # Set the paper color (transparent)
-    )
+    #fig.update_layout(
+    #    showlegend=False,
+    #    xaxis=dict(showgrid=False),
+    #    yaxis=dict(showgrid=False),
+    #    plot_bgcolor='#F8F9FE',  # Set the background color (transparent)
+    #    paper_bgcolor='#F8F9FE',  # Set the paper color (transparent)
+    #)
 
-    fig.update_layout(showlegend=False)
+    #fig.update_layout(showlegend=False)
 
     # Convert the chart to HTML
-    chart_html = pio.to_html(fig)
+    #chart_html = pio.to_html(fig)
 
-    context['chart_html'] = chart_html
+    #context['chart_html'] = chart_html
 
     return render(request, 'home/index.html', context)
 
