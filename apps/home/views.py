@@ -603,7 +603,7 @@ def generate_pdf(request):
         context['image_logo'] = f'data:image/png;base64,{image_logo}'
         context['image_bankili'] = f'data:image/png;base64,{image_bankili}'
 
-        config = pdfkit.configuration(wkhtmltopdf='/usr/bin/wkhtmltopdf')
+        config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
 
         # Use Jinja2 to render the template
         env = Environment(loader=FileSystemLoader(template_dir))
