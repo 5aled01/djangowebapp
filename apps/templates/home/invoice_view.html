@@ -169,21 +169,27 @@
                 </div>
                 <div>
                   <div id="image-container" class="d-flex flex-wrap justify-content-center align-items-center">
-                    {% if images %}
-                      {% for img in images %}
-                        <img src="{{ img.image.url }}" class="imported-image" onclick="enlargeImage(this)" />
-                      {% endfor %}
-                    {% else %}
+                    {% for img in images %}
+                      <img src="{{ img.image.url }}" class="imported-image" onclick="enlargeImage(this)" />
+                    {% endfor %}
+                    {% if images|length == 0 and selectedFiles|length == 0 %}
                       <p>No images found.</p>
                     {% endif %}
                   </div>
+                  <div id="success-message" style="display: none;" class="alert alert-success" role="alert">
+                    Image saved successfully.
+                  </div>
                   <input type="file" id="image-input" accept="image/*" style="display: none;" />
+                  
                   <div id="invoice-details" data-invoice-id="{{ invoice.id }}"></div>
+                  
                   {% csrf_token %}
+                  
                   <button id="add-image-btn" class="btn btn-primary me-1">
-                    <i class="fa fa-plus" ></i> Import Image
+                    <i class="fa fa-plus"></i> Import Image
                   </button>
-                  <button id="save-images-btn" class="btn btn-primary">
+                  
+                  <button id="save-images-btn" class="btn btn-primary" disabled>
                     Save Images
                   </button>
                 </div>
@@ -199,18 +205,7 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
   <script type="text/javascript">
     let selectedFiles = [];
-
-    function dataURItoBlob(dataURI) {
-      const byteString = atob(dataURI.split(',')[1]);
-      const mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0];
-      const arrayBuffer = new ArrayBuffer(byteString.length);
-      const uint8Array = new Uint8Array(arrayBuffer);
-      for (let i = 0; i < byteString.length; i++) {
-        uint8Array[i] = byteString.charCodeAt(i);
-      }
-      const blob = new Blob([arrayBuffer], { type: mimeString });
-      return blob;
-    }
+    let savedCount = 0;
 
     const addImageBtn = document.getElementById('add-image-btn');
     const imageContainer = document.getElementById('image-container');
@@ -224,41 +219,33 @@
     });
 
     imageInput.addEventListener('change', (event) => {
-      selectedFiles = Array.from(event.target.files);
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const file = selectedFiles[i];
-        const reader = new FileReader();
+    selectedFiles = Array.from(event.target.files);
+    imageContainer.innerHTML = ''; // Clear the existing images
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      const imageUrl = URL.createObjectURL(file);
+      const imageElement = document.createElement('img');
+      imageElement.src = imageUrl;
+      imageElement.classList.add('imported-image');
+      imageElement.width = 120;
+      imageContainer.appendChild(imageElement);
 
-        reader.onload = () => {
-          const imageUrl = reader.result;
-          const imageElement = document.createElement('img');
-          imageElement.src = imageUrl;
-          imageElement.classList.add('imported-image');
-          imageElement.width = 120;
-          imageContainer.appendChild(imageElement);
-
-          // Add click event listener to the image element
-          imageElement.addEventListener('click', function() {
-            enlargeImage(this);
-          });
-        };
-
-        if (file) {
-          reader.readAsDataURL(file);
-        }
-      }
-    });
+      imageElement.addEventListener('click', function() {
+        enlargeImage(this);
+      });
+    }
+    saveImagesBtn.disabled = selectedFiles.length === 0;
+  });
 
     saveImagesBtn.addEventListener('click', () => {
       const formData = new FormData();
       formData.append('invoice_id', invoiceId);
 
-      const imageElements = imageContainer.querySelectorAll('.imported-image');
-      imageElements.forEach((imageElement, index) => {
-        const file = dataURItoBlob(imageElement.src);
-        const fileName = `image${index + 1}.${file.type.split('/')[1]}`;
-        formData.append('images', file, fileName);
-      });
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const key = `image_${i + 1}`;
+        const file = selectedFiles[i];
+        formData.append(key, file, file.name);
+      }
 
       fetch('/save_images', {
         method: 'POST',
@@ -270,8 +257,13 @@
       })
         .then((response) => {
           if (response.ok) {
-            console.log('Invoice images saved successfully');
-            displaySavedImages();
+            console.log('Images saved successfully');
+            savedCount++; // Increment the savedCount variable
+            if (savedCount === selectedFiles.length) {
+              console.log('All images saved successfully');
+              displayInvoiceImages(); // Call the function to display the saved images
+              showSuccessMessage();
+            }
           } else {
             console.error('Error:', response.statusText);
           }
@@ -281,49 +273,57 @@
         });
     });
 
+    // Function to show the success message
+    function showSuccessMessage() {
+      const successMessage = document.getElementById('success-message');
+      successMessage.style.display = 'block';
+    }
+
     function displayInvoiceImages() {
-      const invoiceId = '{{ invoice.id }}';  // Replace with the actual invoice ID
+      const invoiceId = '{{ invoice.id }}';
 
       fetch(`/get_invoice_images?invoice_id=${invoiceId}`, {
         method: 'GET',
         headers: {
           'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': '{{ csrf_token }}',  // Replace with the actual CSRF token
+          'X-CSRFToken': '{{ csrf_token }}',
         },
       })
         .then((response) => response.json())
         .then((imageUrls) => {
           const imageContainer = document.getElementById('image-container');
-
-          // Clear the existing images
           imageContainer.innerHTML = '';
 
-          // Add the new images
-          imageUrls.forEach((imageUrl) => {
-            const imageElement = document.createElement('img');
-            imageElement.src = imageUrl;
-            imageElement.classList.add('imported-image');
-            imageElement.width = 120;
+          if (imageUrls.length > 0) {
+            imageUrls.forEach((imageUrl) => {
+              const imageElement = document.createElement('img');
+              imageElement.src = imageUrl;
+              imageElement.classList.add('imported-image');
+              imageElement.width = 120;
 
-            // Add click event listener to the image element
-            imageElement.addEventListener('click', function() {
-              enlargeImage(this);
+              imageElement.addEventListener('click', function() {
+                enlargeImage(this);
+              });
+
+              imageContainer.appendChild(imageElement);
             });
-
-            imageContainer.appendChild(imageElement);
-          });
+          } else {
+            const noImagesMsg = document.createElement('p');
+            noImagesMsg.textContent = 'No images found.';
+            imageContainer.appendChild(noImagesMsg);
+          }
         })
         .catch((error) => {
           console.error('Error:', error);
         });
     }
 
-    // Call the function to display the images when the page loads
     window.addEventListener('DOMContentLoaded', displayInvoiceImages);
 
     function enlargeImage(imageElement) {
       imageElement.classList.toggle('enlarged');
     }
+
   </script>
 </body>
 </html>

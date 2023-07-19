@@ -53,7 +53,7 @@ class Item(models.Model):
 
 class InvoiceImage(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="invoice_images/")
+    image_data = models.BinaryField()
 
     def __str__(self):
         return f"Image for Invoice #{self.invoice.id}"

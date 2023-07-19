@@ -9,6 +9,7 @@ Copyright (c) 2019 - present AppSeed.us
 Copyright (c) 2019 - present AppSeed.us
 """
 
+import base64
 from django import template
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -517,24 +518,31 @@ def Invoice_save(request):
 def save_images(request):
     if request.method == 'POST':
         invoice_id = request.POST.get('invoice_id')
-        images = request.FILES.getlist('images')
+        images = request.FILES.values()
+        saved_images = []
 
         for image in images:
-            invoice_image = InvoiceImage(invoice_id=invoice_id, image=image)
-            invoice_image.save()
+            # Read the image file and get the byte data
+            image_data = image.read()
+
+            # Create and store the InvoiceImage instance in the list
+            invoice_image = InvoiceImage(invoice_id=invoice_id, image_data=image_data)
+            saved_images.append(invoice_image)
+
+        # Save all the InvoiceImage instances
+        InvoiceImage.objects.bulk_create(saved_images)
 
         return JsonResponse({'message': 'Images saved successfully'})
     return JsonResponse({'message': 'Invalid request method'}, status=400)
 
-
 def get_invoice_images(request):
     if request.method == 'GET':
         invoice_id = request.GET.get('invoice_id')
-        
 
         try:
             images = InvoiceImage.objects.filter(invoice_id=invoice_id)
-            image_urls = [image.image.url for image in images]
+            image_data = [image.image_data for image in images]
+            image_urls = [f'data:image/jpeg;base64,{base64.b64encode(image).decode("utf-8")}' for image in image_data]
             return JsonResponse(image_urls, safe=False)
         except InvoiceImage.DoesNotExist:
             return JsonResponse([], safe=False)
