@@ -31,9 +31,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'apps.home',  # Enable the inner home (home)
+    'apps.home',
+    'wkhtmltopdf'  # Enable the inner home (home)
     'chartjs'
 ]
+
+WKHTMLTOPDF_CMD_OPTIONS = {
+    'quiet': True,
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
