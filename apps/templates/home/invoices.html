@@ -46,6 +46,14 @@
               <i class="fas fa-circle-notch fa-spin"></i>
             </div>
           </div>
+          {% block success_message %}
+            {% if  success_message %}
+              <div class="d-flex align-items-center">
+                <i class="ni ni-check-bold text-green"></i>
+                <span class="nav-link-text">{{  success_message }}</span>
+              </div>
+            {% endif %}
+          {% endblock success_message %}
         </div>
           <div class="table-responsive">
             <!-- Table -->

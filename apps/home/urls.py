@@ -32,7 +32,7 @@ urlpatterns = [
     path('invoices', views.invoices, name='invoices'),
     path('save_images', views.save_images, name='save_images'),
     path('get_invoice_images', views.get_invoice_images, name='get_invoice_images'),
-
+    path('delete_invoice', views.delete_invoice, name='delete_invoice'),
     path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
 
     # Matches any html file

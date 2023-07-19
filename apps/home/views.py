@@ -412,7 +412,7 @@ def invoices_detail(request):
 @login_required(login_url="/login/")
 def invoices(request):
     search_query = request.GET.get('search', '')
-
+    success_message = messages.get_messages(request)
     invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
     if search_query != '':
@@ -443,10 +443,16 @@ def invoices(request):
     paginator = Paginator(invoices, per_page=4)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
+    success_messages = messages.get_messages(request)
+    success_message = None
+    for message in success_messages:
+        success_message = str(message)
+        break
+
     context['invoices'] = page_obj
     context['search_query'] = search_query
-
+    context['success_message']= success_message
     return render(request, 'home/invoices.html', context)
 
 @login_required(login_url="/login/")   
@@ -559,9 +565,19 @@ def get_invoice_images(request):
     return JsonResponse({'message': 'Invalid request method'}, status=400)
 
 
+def delete_invoice(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        try:
+            invoice = Invoice.objects.get(id=invoice_id)
+            invoice.delete()
+            messages.success(request, 'Invoice deleted successfully')
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Invoice not found')
+    else:
+        messages.error(request, 'Invalid request')
 
-
-
+    return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 def generate_pdf(request):
 
