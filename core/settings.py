@@ -39,7 +39,7 @@ INSTALLED_APPS = [
 WKHTMLTOPDF_CMD = '/usr/local/bin/wkhtmltopdf'
 
 WKTHMLTOPDF_CMD_OPTIONS ={
-    'quiet': False,
+    'quiet': True,
 }
 
 MIDDLEWARE = [
