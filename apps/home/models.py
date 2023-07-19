@@ -42,6 +42,7 @@ class Invoice(models.Model):
 class Item(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
     item = models.CharField(max_length=100)
+    source = models.CharField(max_length=100, default='Supplier A')
     quantity = models.IntegerField()
     length = models.DecimalField(max_digits=10, decimal_places=2)
     width = models.DecimalField(max_digits=10, decimal_places=2)

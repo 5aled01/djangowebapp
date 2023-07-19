@@ -100,6 +100,7 @@
                 <thead>
                   <tr>
                     <th><span>Item Description</span></th>
+                    <th><span>Item Source</span></th>
                     <th><span>Quantity</span></th>
                     <th><span>Length</span></th>
                     <th><span>Width</span></th>
@@ -116,6 +117,11 @@
                       <a class="cut">-</a
                       ><input type="text" class="Description-input" required />
                     </td>
+
+                    <td>
+                      <input type="text" class="source-input" required />
+                    </td>
+
                     <td>
                       <input type="number" class="quantity-input" required />
                     </td>
@@ -129,7 +135,9 @@
                       <input type="number" class="height-input" required />
                     </td>
                     <td class="cbm-input"></td>
-                    <td class="rate-input">650</td>
+                    <td>
+                      <input type="number" class="rate-input"  value="650" required />
+                    </td>
                     <td class="price-input"></td>
                   </tr>
                 </tbody>
@@ -260,13 +268,14 @@
         event.target === widthInput ||
         event.target === heightInput ||
         event.target === augInput ||
+        event.target === rateInput ||
         event.target === manifestInput
       ) {
         const quantity = parseFloat(quantityInput.value) || 0;
         const length = parseFloat(lengthInput.value) || 0;
         const width = parseFloat(widthInput.value) || 0;
         const height = parseFloat(heightInput.value) || 0;
-        const rate = parseFloat(rateInput.textContent) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
 
         const aug = augInput.value || 0;
         const manifest = manifestInput.value || 0;
@@ -290,12 +299,13 @@
       const row = document.createElement("tr");
       row.innerHTML =
         `<td><a class="cut">-</a><input type="text" class="Description-input required"></td>` +
+        '<td><input type="number" class="source-input" required></td>' +
         '<td><input type="number" class="quantity-input" required></td>' +
         '<td><input type="number" class="length-input" required></td>' +
         '<td><input type="number" class="width-input" required></td>' +
         '<td><input type="number" class="height-input" required></td>' +
         `<td class="cbm-input"></td>` +
-        `<td class="rate-input">650</td>` +
+        '<td><input type="number" class="rate-input"  value="650" required></td>' +
         `<td class="price-input"></td>`;
 
       return row;
@@ -335,6 +345,9 @@
 
       rows.forEach(function (row) {
         const descriptionInput = row.querySelector(".Description-input");
+
+        const sourceInput = row.querySelector(".source-input");
+
         const manifestInput = document.getElementById("manifest");
         const quantityInput = row.querySelector(".quantity-input");
         const lengthInput = row.querySelector(".length-input");
@@ -347,6 +360,7 @@
 
         const item = {
           item: descriptionInput.value.trim(),
+          source: sourceInput.value.trim(),
           quantity: parseFloat(quantityInput.value) || 0,
           length: parseFloat(lengthInput.value) || 0,
           width: parseFloat(widthInput.value) || 0,

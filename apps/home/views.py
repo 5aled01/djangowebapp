@@ -32,6 +32,13 @@ import json
 from django.utils.crypto import get_random_string
 from .models import Customer, Container, InvoiceImage, Item, Invoice
 
+
+
+import pdfkit
+import base64
+from jinja2 import Environment, FileSystemLoader
+
+
 context = {}
 
 @login_required(login_url="/login/")
@@ -468,6 +475,7 @@ def Invoice_save(request):
             item_obj = Item(
                 invoice=invoice,
                 item=item["item"],
+                source=item["source"],
                 quantity=item["quantity"],
                 length=item["length"],
                 width=item["width"],
@@ -507,6 +515,7 @@ def Invoice_save(request):
         context['invoice'] = invoice
         context['items'] = items
 
+        messages.success(request, "invoice saved successfully.")
 
         load_template = 'final_invoice.html'
         html_template = loader.get_template('home/' + load_template)
@@ -548,3 +557,62 @@ def get_invoice_images(request):
             return JsonResponse([], safe=False)
 
     return JsonResponse({'message': 'Invalid request method'}, status=400)
+
+
+
+
+
+
+def generate_pdf(request):
+
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        print(invoice_id)
+        invoice = get_object_or_404(Invoice, id=invoice_id)
+
+        invoice_summaries = []
+        
+        # Get all items related to the invoice
+        items = invoice.items.all()
+            
+        context['invoice_summaries'] = invoice_summaries
+        context['invoice'] = invoice
+        context['customer'] = invoice.customer
+        context['items'] = items 
+        context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
+        context['totalcbm'] = items.aggregate(s=Sum("CBM"))["s"]
+        context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
+        # Your dynamic data (replace this with your data logic)
+
+        # Path to the directory containing the HTML template and the image
+        template_dir = 'apps/templates/home'
+
+        image_file_logo = "apps/static/assets/img/theme/cmi.png"
+        image_file_bankili = "apps/static/assets/img/theme/bankili.png"
+
+        # Read and encode the image as base64
+        with open(image_file_logo, 'rb') as f:
+            image_logo = base64.b64encode(f.read()).decode('utf-8')
+
+        with open(image_file_bankili, 'rb') as f:
+            image_bankili = base64.b64encode(f.read()).decode('utf-8')
+
+        # Render the template with dynamic data and image data
+        template = 'invoice_style_pdf.html'
+        #html_template = loader.get_template('invoice_style_pdf.html')
+        context['image_logo'] = f'data:image/png;base64,{image_logo}'
+        context['image_bankili'] = f'data:image/png;base64,{image_bankili}'
+
+        # Use Jinja2 to render the template
+        env = Environment(loader=FileSystemLoader(template_dir))
+        rendered_html = env.get_template(template).render(context, image_logo=f'data:image/png;base64,{image_logo}', image_bankili=f'data:image/png;base64,{image_bankili}')
+
+
+        # Create a response with PDF content and force download
+        response = HttpResponse(pdfkit.from_string(rendered_html, options={'quiet': '', 'enable-local-file-access': ''})
+    , content_type='application/pdf')
+        response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+
+        return response
+    else:
+        pass

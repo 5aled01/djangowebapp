@@ -1,0 +1,247 @@
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>    
+            .clearfix:after {
+            content: "";
+            display: table;
+            clear: both;
+            }
+
+            a {
+            color: #5D6975;
+            text-decoration: underline;
+            }
+
+            body {
+            position: relative;
+            width: 21cm;  
+            height: 29.7cm; 
+            margin: 0 auto; 
+            color: #001028;
+            background: #FFFFFF; 
+            font-family: Arial, sans-serif; 
+            font-size: 12px; 
+            font-family: Arial;
+            }
+
+            header {
+            padding: 10px 0;
+            margin-bottom: 10px;
+            }
+
+            #logo {
+            text-align: center;
+            margin-bottom: 10px;
+            }
+
+            #logo img {
+            width: 90px;
+            }
+
+            h1 {
+            border-top: 1px solid  #5D6975;
+            border-bottom: 1px solid  #5D6975;
+            color: #5D6975;
+            font-size: 2.4em;
+            line-height: 1.4em;
+            font-weight: normal;
+            text-align: center;
+            margin: 0 0 20px 0;
+            background: url(dimension.png);
+            }
+
+            #project {
+            float: left;
+            }
+
+            #project span {
+            color: #5D6975;
+            text-align: right;
+            width: 52px;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 0.8em;
+            }
+
+            #company {
+            float: right;
+            text-align: right;
+            }
+
+            #project div,
+            #company div {
+            white-space: nowrap;        
+            }
+
+            table {
+            width: 100%;
+            border-collapse: collapse;
+            border-spacing: 0;
+            margin-bottom: 20px;
+            }
+
+            table tr:nth-child(2n-1) td {
+            background: #F5F5F5;
+            }
+
+            table th,
+            table td {
+            text-align: left;
+            }
+
+            table th {
+            padding: 10px 10px;
+            color: #5D6975;
+            border-bottom: 1px solid #C1CED9;
+            white-space: nowrap;        
+            font-weight: bold;
+            text-align: left;
+            }
+
+            table .service,
+            table .desc {
+            text-align: left;
+            }
+
+            table td {
+            padding: 15px;
+            text-align: left;
+            }
+
+            table td.service,
+            table td.desc {
+            vertical-align: top;
+            }
+
+            table td.unit,
+            table td.qty,
+            table td.total {
+            font-size: 1.2em;
+            }
+
+            table td.grand {
+            border-top: 1px solid #5D6975;
+            font-weight: bold;
+            text-align: right;
+            font-size: 1.2em;
+            }
+
+            table td.total {
+            text-align: right;
+            font-weight: bold;
+            }
+
+            table td.total {
+            text-align: right;
+            }
+
+            #notices .notice {
+            color: #000000;
+            font-size: 1.2em;
+            }
+
+            footer {
+            color: #5D6975;
+            width: 100%;
+            height: 20px;
+            position: absolute;
+            bottom: 0;
+            border-top: 1px solid #C1CED9;
+            padding: 8px 0;
+            text-align: right;
+            }
+        </style>
+        <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+
+    </head>
+    
+
+<!------ Include the above in your HEAD tag ---------->
+
+<body>
+    <header class="clearfix">
+      <div id="logo">
+        <img src="{{ image_logo }}" alt="Logo">
+
+      </div>
+      <h1>{{ invoice.id }}</h1>
+      <div id="company" class="clearfix">
+        <div style="font-size: 1.2em;">فيري اوشنير لخدمات الشحن ش.ذ.م.م</div>
+        <div style="font-size: 1.2em;">دبي العوير</div>
+        <div style="font-size: 1.2em;">الرقم: ٠٠٩٧١٥٠٣٩٤١٠٦٢</div>
+      </div>
+      <div id="project">
+        <div>FERRY OCEANAIR SHIPPING SERVICES L.L.C</div>
+        <div>Dubai Al aweer</div>
+        <div>Tel: +971503941062</div>
+      </div>
+    </header>
+    <header class="clearfix">
+      <div id="company" class="clearfix">
+        <div><span>Date: </span> {{ invoice.date }}</div>
+      </div>
+      <div id="project">
+        <div><span>Billed To: </span> {{ customer.name }}</div>
+        <div><span>Phone: </span> {{ customer.phone_number }}</div>
+      </div>
+    </header>
+
+    <main>
+      <table>
+        <thead>
+          <tr>
+            <th class="service">Item</th>
+            <th class="service">Source</th>
+            <th class="desc">Quantity</th>
+            <th>Length</th>
+            <th>Width</th>
+            <th>Height</th>
+            <th>CBM</th>
+            <th>Rate</th>
+            <th style="text-align: left;">Price (AED)</th>
+          </tr>
+        </thead>
+        <tbody>
+
+        {% for invoice in items %}
+          <tr>
+            <td class="service">{{ invoice.item }}</td>
+            <td class="qty">{{  invoice.source  }}</td>
+            <td class="qty">{{  invoice.quantity  }}</td>
+            <td class="qty">{{  invoice.length  }}</td>
+            <td class="qty">{{  invoice.width  }}</td>
+            <td class="qty">{{  invoice.height  }}</td>
+            <td class="unit">{{  invoice.CBM  }}</td>
+            <td class="unit">{{  invoice.rate  }}</td>
+            <td class="total" style="font-weight: normal;">{{  invoice.price  }}</td>
+          </tr>
+        {% endfor %}
+
+          <tr style="font-weight: bold;">
+            <td colspan="8" class="total">Total Packages</td>
+            <td class="total">{{ totalpack }}</td>
+          </tr>
+          <tr style="font-weight: bold;">
+            <td colspan="8" class="total">Total CBM</td>
+            <td class="total">{{ totalcbm }}</td>
+          </tr>
+          <tr style="font-weight: bold;">
+            <td colspan="8" class="grand" style="font-weight: bold;">Grand Total</td>
+            <td class="grand">{{totalprice}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div id="notices">
+        <div class="notice">يرجى من زبنائنا الكرام من من سيدفع بالأوقية الدفع عن طريق بنكيلي</div>
+            <div style="text-align: left;">
+                <img src="{{ image_bankili }}" style="height: 80px; width: 80px;" alt="Logo">
+            </div>
+            <div style="text-align: left;">
+                (+222) 46 61 62 18
+        </div>
+      </div>
+    </main>
+   
+  </body>

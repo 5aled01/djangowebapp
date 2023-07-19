@@ -49,18 +49,16 @@
                     FERRY OCEANAIR SHIPPING SERVICES L.L.C
                   </h2>
                 </div>
-                <div class="text-muted">
-                  <p class="mb-1">Dubai Al aweer</p>
-                  <p>
-                    <i class="uil uil-phone me-1"></i>Tel: (+971) 503-941-062
-                  </p>
-                </div>
-                <img
-                  src="/static/assets/img/theme/cmi.png"
-                  style="display: block;"
-                  height="83"
-                  width="84"
-                />
+              {% if messages %}
+                  {% for message in messages %}
+              
+                    <div class="alert alert-success"> 
+
+                    <span class="nav-link-text">{{ message }}</span>
+                  
+                  </div>
+                  {% endfor %}
+              {% endif %} 
               </div>
               <hr class="my-4" />
               <div class="row">
@@ -95,6 +93,7 @@
                     <thead>
                       <tr>
                         <th>Item</th>
+                        <th>Source</th>
                         <th>Quantity</th>
                         <th>Length</th>
                         <th>Width</th>
@@ -114,6 +113,7 @@
                             </h5>
                           </div>
                         </td>
+                        <td>{{invoice.source}}</td>
                         <td>{{invoice.quantity}}</td>
                         <td>{{ invoice.length }}</td>
                         <td>{{ invoice.width }}</td>
@@ -125,14 +125,14 @@
                       {% endfor %}
 
                       <tr>
-                        <th scope="row" colspan="7" class="text-end">
+                        <th scope="row" colspan="8" class="text-end">
                           Total Packages
                         </th>
                         <td class="text-end">{{ totalpack }}</td>
                       </tr>
 
                       <tr>
-                        <th scope="row" colspan="7" class="border-0 text-end">
+                        <th scope="row" colspan="8" class="border-0 text-end">
                           Total CBM
                         </th>
                         <td class="border-0 text-end">
@@ -141,7 +141,7 @@
                       </tr>
 
                       <tr>
-                        <th scope="row" colspan="7" class="border-0 text-end">
+                        <th scope="row" colspan="8" class="border-0 text-end">
                           Grand Total
                         </th>
                         <td class="border-0 text-end">
@@ -165,11 +165,19 @@
 
                 <div class="d-print-none mt-4">
                   <div class="float-end">
-                    <a
-                      href="javascript:window.print()"
-                      class="btn btn-success me-1"
-                      ><i class="fa fa-print"></i
-                    ></a>
+
+                    <form action="{% url 'generate_pdf' %}" method="post">
+                      {% csrf_token %}
+  
+                      <input name="invoice_id"
+                      type="hidden"
+                      class="customer-input"
+                      value="{{ invoice.id }}"
+                    />
+                      <button type="submit" class="btn btn-success me-1"><i class="fa fa-download"></i></button>
+                      
+                      
+                  </form>
                   </div>
                 </div>
               </div>

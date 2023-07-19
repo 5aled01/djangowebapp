@@ -33,6 +33,8 @@ urlpatterns = [
     path('save_images', views.save_images, name='save_images'),
     path('get_invoice_images', views.get_invoice_images, name='get_invoice_images'),
 
+    path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
+
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
