@@ -619,13 +619,15 @@ def generate_pdf(request):
         context['image_logo'] = f'data:image/png;base64,{image_logo}'
         context['image_bankili'] = f'data:image/png;base64,{image_bankili}'
 
+        config = pdfkit.configuration()
+
         # Use Jinja2 to render the template
         env = Environment(loader=FileSystemLoader(template_dir))
         rendered_html = env.get_template(template).render(context, image_logo=f'data:image/png;base64,{image_logo}', image_bankili=f'data:image/png;base64,{image_bankili}')
 
 
         # Create a response with PDF content and force download
-        response = HttpResponse(pdfkit.from_string(rendered_html, options={'quiet': '', 'enable-local-file-access': ''})
+        response = HttpResponse(pdfkit.from_string(rendered_html, options={'quiet': '', 'enable-local-file-access': ''}, configuration=config)
     , content_type='application/pdf')
         response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
 
