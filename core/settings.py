@@ -134,5 +134,7 @@ STATICFILES_DIRS = [
 STATICFILES_DIRS = (
     os.path.join(CORE_DIR, 'apps/static'),
 )
+
+os.environ['WKHTMLTOPDF_PATH'] = '/usr/bin/wkhtmltopdf'
 #############################################################
 #############################################################
