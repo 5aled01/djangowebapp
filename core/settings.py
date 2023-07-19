@@ -38,9 +38,6 @@ INSTALLED_APPS = [
 
 WKHTMLTOPDF_CMD = '/usr/local/bin/wkhtmltopdf'
 
-WKTHMLTOPDF_CMD_OPTIONS ={
-    'quiet': True,
-}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
