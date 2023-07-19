@@ -36,8 +36,10 @@ INSTALLED_APPS = [
     'chartjs'
 ]
 
-WKHTMLTOPDF_CMD_OPTIONS = {
-    'quiet': True,
+WKHTMLTOPDF_CMD = '/usr/bin/wkhtmltopdf'
+
+WKTHMLTOPDF_CMD_OPTIONS ={
+    'quiet': False,
 }
 
 MIDDLEWARE = [
