@@ -55,5 +55,5 @@ zipp==3.16.0
 Jinja2==3.1.2
 pdfkit==1.0.0
 MarkupSafe==2.1.3
-wkhtmltopdf
+django-wkhtmltopdf
 
