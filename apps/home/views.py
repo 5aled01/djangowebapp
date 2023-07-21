@@ -659,6 +659,11 @@ def generate_pdf(request):
             result = BytesIO()
             pisa.pisaDocument(StringIO(html), dest=result) 
 
+
+            #html_template = loader.get_template('home/page-500.html')
+            #return HttpResponse(html_template.render(context, request))
+    
+
             response =  HttpResponse(result.getvalue(), content_type='application/pdf', ) 
             response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
