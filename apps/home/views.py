@@ -581,25 +581,6 @@ def delete_invoice(request):
 
     return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
-def merge_pdfs(input_pdfs):
-    # Create a PDF merger object
-    pdf_merger = PyPDF2.PdfMerger()
-
-    # Iterate through the list of input PDFs and add them to the merger object
-    for pdf in input_pdfs:
-        with open(pdf, 'rb') as pdf_file:
-            pdf_merger.append(pdf_file)
-
-    # Create a binary object to hold the merged PDF in memory
-    merged_pdf_buffer = io.BytesIO()
-
-    # Write the merged PDF to the binary object
-    pdf_merger.write(merged_pdf_buffer)
-
-    # Reset the file pointer of the binary object to the beginning
-    merged_pdf_buffer.seek(0)
-
-    return merged_pdf_buffer
 
 
 def generate_pdf(request):
@@ -676,11 +657,9 @@ def generate_pdf(request):
             template = get_template(template) 
             html = template.render(context) 
             result = BytesIO()
-            pdf = pisa.pisaDocument(StringIO(html), dest=result) 
+            pisa.pisaDocument(StringIO(html), dest=result) 
 
-            html_template = loader.get_template('home/containers.html')
-
-            response =  HttpResponse(html_template.render(context, request), result.getvalue(), content_type='application/pdf', ) 
+            response =  HttpResponse(result.getvalue(), content_type='application/pdf', ) 
             response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
         
