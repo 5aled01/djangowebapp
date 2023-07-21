@@ -7,6 +7,8 @@ from django.conf.urls.static import static
 from django.urls import path, re_path, include
 from apps.home import views
 from core import settings
+from wkhtmltopdf.views import PDFTemplateView
+
 
 urlpatterns = [
 

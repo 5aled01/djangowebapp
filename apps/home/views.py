@@ -8,6 +8,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 Copyright (c) 2019 - present AppSeed.us
 """
+import PyPDF2
 
 import base64
 from django import template
@@ -34,9 +35,10 @@ from .models import Customer, Container, InvoiceImage, Item, Invoice
 
 
 
-import pdfkit
-import base64
-from jinja2 import Environment, FileSystemLoader
+from xhtml2pdf import pisa
+from io import StringIO, BytesIO
+from django.template.loader import get_template 
+from django.template import Context
 
 
 context = {}
@@ -499,10 +501,10 @@ def Invoice_save(request):
             totalpack += item["quantity"]
 
             #add create message
-            container, create = Container.objects.get_or_create(id=item["manifest"])
-            print('----------->',container)
-            container.invoice.add(invoice)
-            container.save()
+        container, create = Container.objects.get_or_create(id=item["manifest"])
+        print('----------->',container)
+        container.invoice.add(invoice)
+        container.save()
 
 
             #print('not goood------')
@@ -579,7 +581,29 @@ def delete_invoice(request):
 
     return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
+def merge_pdfs(input_pdfs):
+    # Create a PDF merger object
+    pdf_merger = PyPDF2.PdfMerger()
+
+    # Iterate through the list of input PDFs and add them to the merger object
+    for pdf in input_pdfs:
+        with open(pdf, 'rb') as pdf_file:
+            pdf_merger.append(pdf_file)
+
+    # Create a binary object to hold the merged PDF in memory
+    merged_pdf_buffer = io.BytesIO()
+
+    # Write the merged PDF to the binary object
+    pdf_merger.write(merged_pdf_buffer)
+
+    # Reset the file pointer of the binary object to the beginning
+    merged_pdf_buffer.seek(0)
+
+    return merged_pdf_buffer
+
+
 def generate_pdf(request):
+    
 
     if request.method == 'POST':
         invoice_id = request.POST.get('invoice_id')
@@ -587,50 +611,73 @@ def generate_pdf(request):
         invoice = get_object_or_404(Invoice, id=invoice_id)
 
         invoice_summaries = []
-        
+        context = {}
+
         # Get all items related to the invoice
         items = invoice.items.all()
             
         context['invoice_summaries'] = invoice_summaries
         context['invoice'] = invoice
         context['customer'] = invoice.customer
-        context['items'] = items 
         context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
         context['totalcbm'] = items.aggregate(s=Sum("CBM"))["s"]
         context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
         # Your dynamic data (replace this with your data logic)
 
         # Path to the directory containing the HTML template and the image
-        template_dir = 'apps/templates/home'
 
-        image_file_logo = "apps/static/assets/img/theme/cmi.png"
+        image_file_logo = "apps/static/assets/img/theme/tet.png"
         image_file_bankili = "apps/static/assets/img/theme/bankili.png"
 
-        # Read and encode the image as base64
-        with open(image_file_logo, 'rb') as f:
-            image_logo = base64.b64encode(f.read()).decode('utf-8')
+        image_logo = image_file_logo
 
-        with open(image_file_bankili, 'rb') as f:
-            image_bankili = base64.b64encode(f.read()).decode('utf-8')
+        image_bankili = image_file_bankili
 
         # Render the template with dynamic data and image data
-        template = 'invoice_style_pdf.html'
+        template = 'home/invoice_style_pdf.html'
+
         #html_template = loader.get_template('invoice_style_pdf.html')
-        context['image_logo'] = f'data:image/png;base64,{image_logo}'
-        context['image_bankili'] = f'data:image/png;base64,{image_bankili}'
 
-        config = pdfkit.configuration(wkhtmltopdf='/usr/local/bin/wkhtmltopdf')
+        context['image_logo'] = image_logo
+        context['image_bankili'] = image_bankili
+        context['items'] = items
 
-        # Use Jinja2 to render the template
-        env = Environment(loader=FileSystemLoader(template_dir))
-        rendered_html = env.get_template(template).render(context, image_logo=f'data:image/png;base64,{image_logo}', image_bankili=f'data:image/png;base64,{image_bankili}')
+        if len(items) >= 9:
 
+            template = get_template('home/invoice_no_foot.html') 
+            context['items'] = items[:10] 
+            html = template.render(context) 
+            result1 = BytesIO()
+            pdf1 = pisa.pisaDocument(StringIO(html), dest=result1)
 
-        # Create a response with PDF content and force download
-        response = HttpResponse(pdfkit.from_string(rendered_html, options={'quiet': '', 'enable-local-file-access': ''}, configuration=config)
-    , content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            template = get_template('home/second_invoice_style_pdf.html') 
+            context['items'] = items[10:] 
+            html = template.render(context) 
+            result2 = BytesIO()
+            pdf1 = pisa.pisaDocument(StringIO(html), dest=result2)
 
-        return response
-    else:
-        pass
+            # Reset the file pointers of the generated PDFs
+            result1.seek(0)
+            result2.seek(0)
+
+            # Create a PDF merger object
+            pdf_merger = PyPDF2.PdfMerger()
+            pdf_merger.append(result1)
+            pdf_merger.append(result2)
+            merged_pdf_buffer = BytesIO()
+            pdf_merger.write(merged_pdf_buffer)
+            merged_pdf_buffer.seek(0)
+            print("too")
+
+            return HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf') 
+
+        else:
+            template = get_template(template) 
+            html = template.render(context) 
+            result = BytesIO()
+            pdf = pisa.pisaDocument(StringIO(html), dest=result) 
+
+            return HttpResponse(result.getvalue(), content_type='application/pdf') 
+        
+    return HttpResponse('Errors')
+
