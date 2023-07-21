@@ -669,15 +669,18 @@ def generate_pdf(request):
             merged_pdf_buffer.seek(0)
             print("too")
 
-            return HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf') 
-
+            response =  HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf') 
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            return response
         else:
             template = get_template(template) 
             html = template.render(context) 
             result = BytesIO()
             pdf = pisa.pisaDocument(StringIO(html), dest=result) 
 
-            return HttpResponse(result.getvalue(), content_type='application/pdf') 
+            response =  HttpResponse(result.getvalue(), content_type='application/pdf') 
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            return response
         
     return HttpResponse('Errors')
 
