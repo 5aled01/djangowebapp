@@ -625,13 +625,13 @@ def generate_pdf(request):
 
         if len(items) >= 9:
 
-            template = loader.get_template('home/invoice_no_foot.html') 
+            template = loader.get_template('home/invoice_style_pdf.html') 
             context['items'] = items[:10] 
             html = template.render(context) 
             result1 = BytesIO()
             pdf1 = pisa.pisaDocument(StringIO(html), dest=result1)
 
-            template = loader.get_template('home/second_invoice_style_pdf.html') 
+            template = loader.get_template('home/invoice_style_pdf.html') 
             context['items'] = items[10:] 
             html = template.render(context) 
             result2 = BytesIO()
@@ -651,7 +651,7 @@ def generate_pdf(request):
             print("too")
 
             response =  HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf') 
-            response['Content-Disposition'] = 'inline;filename=invoice.pdf'
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
         else:
             template = loader.get_template(template) 
@@ -660,7 +660,7 @@ def generate_pdf(request):
             pisa.pisaDocument(StringIO(html), dest=result) 
                 
             response =  HttpResponse(result.getvalue(), content_type='application/pdf') 
-            response['Content-Disposition'] = 'inline;filename=invoice.pdf'
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
         
     return HttpResponse('Errors')
