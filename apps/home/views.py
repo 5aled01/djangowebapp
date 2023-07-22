@@ -9,7 +9,7 @@ Copyright (c) 2019 - present AppSeed.us
 Copyright (c) 2019 - present AppSeed.us
 """
 import PyPDF2
-import io
+
 import base64
 from django import template
 from django.shortcuts import render, redirect, get_object_or_404
@@ -583,8 +583,9 @@ def delete_invoice(request):
 
 
 
-
 def generate_pdf(request):
+    
+
     if request.method == 'POST':
         invoice_id = request.POST.get('invoice_id')
         print(invoice_id)
@@ -605,79 +606,63 @@ def generate_pdf(request):
         # Your dynamic data (replace this with your data logic)
 
         # Path to the directory containing the HTML template and the image
+
         image_file_logo = "apps/static/assets/img/theme/tet.png"
         image_file_bankili = "apps/static/assets/img/theme/bankili.png"
+
         image_logo = image_file_logo
+
         image_bankili = image_file_bankili
 
         # Render the template with dynamic data and image data
         template = 'home/invoice_style_pdf.html'
+
+        #html_template = loader.get_template('invoice_style_pdf.html')
+
         context['image_logo'] = image_logo
         context['image_bankili'] = image_bankili
         context['items'] = items
 
         if len(items) >= 9:
-            # Merge multiple PDFs into a single compressed PDF
-            merged_pdf_buffer = compress_multiple_pdfs(template, context, items)
-            response = HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf')
-        else:
-            # Generate a single PDF and compress it
-            pdf_buffer = generate_single_pdf(template, context)
-            response = HttpResponse(pdf_buffer.getvalue(), content_type='application/pdf')
 
-        response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
-        return response
+            template = loader.get_template('home/invoice_no_foot.html') 
+            context['items'] = items[:10] 
+            html = template.render(context) 
+            result1 = BytesIO()
+            pdf1 = pisa.pisaDocument(StringIO(html), dest=result1)
+
+            template = get_template('home/second_invoice_style_pdf.html') 
+            context['items'] = items[10:] 
+            html = template.render(context) 
+            result2 = BytesIO()
+            pdf1 = pisa.pisaDocument(StringIO(html), dest=result2)
+
+            # Reset the file pointers of the generated PDFs
+            result1.seek(0)
+            result2.seek(0)
+
+            # Create a PDF merger object
+            pdf_merger = PyPDF2.PdfMerger()
+            pdf_merger.append(result1)
+            pdf_merger.append(result2)
+            merged_pdf_buffer = BytesIO()
+            pdf_merger.write(merged_pdf_buffer)
+            merged_pdf_buffer.seek(0)
+            print("too")
+
+            response =  HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf') 
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            return response
+        else:
+            template = get_template(template) 
+            html = template.render(context) 
+            result = BytesIO()
+            pisa.pisaDocument(StringIO(html), dest=result) 
+                
+
+            response =  HttpResponse(result.getvalue(), content_type='application/pdf', ) 
+            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            return response
         
     return HttpResponse('Errors')
 
-def generate_single_pdf(template, context):
-    html_template = loader.get_template(template)
-    html = html_template.render(context)
-    result = io.BytesIO()
-    pisa.pisaDocument(io.StringIO(html), dest=result)
-    return compress_pdf(result)
-
-def compress_pdf(pdf_buffer):
-    # Create a PDF reader object from the buffer
-    pdf_reader = PyPDF2.PdfReader(pdf_buffer)
-
-    # Create a PDF writer object
-    pdf_writer = PyPDF2.PdfWriter()
-
-    # Add pages from the input PDF to the writer object
-    for page in pdf_reader.pages:
-        pdf_writer.add_page(page)
-
-    # Write the compressed PDF to a new buffer
-    compressed_pdf_buffer = io.BytesIO()
-    pdf_writer.write(compressed_pdf_buffer)
-    compressed_pdf_buffer.seek(0)
-
-    return compressed_pdf_buffer
-
-def compress_multiple_pdfs(template, context, items):
-    # Split items into chunks of 10 (to avoid excessive PDF page count)
-    chunked_items = [items[i:i+10] for i in range(0, len(items), 10)]
-
-    # Create an empty list to store the compressed PDF buffers
-    compressed_pdfs = []
-
-    # Generate and compress each chunk separately
-    for chunk in chunked_items:
-        pdf_buffer = generate_single_pdf(template, context)
-        compressed_pdf_buffer = compress_pdf(pdf_buffer)
-        compressed_pdfs.append(compressed_pdf_buffer)
-
-    # Create a PDF merger object
-    pdf_merger = PyPDF2.PdfMerger()
-
-    # Append each compressed PDF to the merger
-    for compressed_pdf_buffer in compressed_pdfs:
-        pdf_merger.append(compressed_pdf_buffer)
-
-    # Merge the PDFs into a single compressed PDF
-    merged_pdf_buffer = io.BytesIO()
-    pdf_merger.write(merged_pdf_buffer)
-    merged_pdf_buffer.seek(0)
-
-    return merged_pdf_buffer
