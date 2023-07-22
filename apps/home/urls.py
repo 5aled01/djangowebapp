@@ -16,8 +16,8 @@ urlpatterns = [
     path('', views.index, name='home'),
 
     path('edit_customer', views.edit_customer, name='edit_customer'),
-    path('customer_detail/<uuid:customer_id>/', views.customer_detail, name='customer_detail'),
-    
+    path('customer_detail/<customer_id>/', views.customer_detail, name='customer_detail'),
+
     path('delete_container', views.delete_container, name='delete_container'),
 
 

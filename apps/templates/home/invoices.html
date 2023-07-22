@@ -50,7 +50,7 @@
             {% if  success_message %}
               <div class="d-flex align-items-center">
                 <i class="ni ni-check-bold text-green"></i>
-                <span class="nav-link-text">{{  success_message }}</span>
+                <span class="nav-link-text">{{ success_message }}</span>
               </div>
             {% endif %}
           {% endblock success_message %}
@@ -82,7 +82,7 @@
                             <i class="fas fa-ellipsis-v"></i>
                           </a>
                           <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                            <a class="dropdown-item" href="/invoice_view.html?invoice_id={{ invoice.id }}" target="_blank">View Invoice</a>
+                            <a class="dropdown-item" href="/invoice_view.html?invoice_id={{ invoice.id }}" >View Invoice</a>
                           </div>
                         </div>
                       </td>

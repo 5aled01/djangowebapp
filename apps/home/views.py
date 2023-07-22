@@ -447,10 +447,12 @@ def invoices(request):
     page_obj = paginator.get_page(page_number)
 
     success_messages = messages.get_messages(request)
-    success_message = None
+   
     for message in success_messages:
         success_message = str(message)
         break
+    
+    success_message = None
 
     context['invoices'] = page_obj
     context['search_query'] = search_query
@@ -574,6 +576,7 @@ def delete_invoice(request):
             invoice = Invoice.objects.get(id=invoice_id)
             invoice.delete()
             messages.success(request, 'Invoice deleted successfully')
+
         except Invoice.DoesNotExist:
             messages.error(request, 'Invoice not found')
     else:
