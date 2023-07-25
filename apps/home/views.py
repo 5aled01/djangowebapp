@@ -502,7 +502,7 @@ def Invoice_save(request):
             totalcbm += item["CBM"]
             totalpack += item["quantity"]
 
-            #add create message
+        #add create message
         container, create = Container.objects.get_or_create(id=item["manifest"])
         print('----------->',container)
         container.invoice.add(invoice)
