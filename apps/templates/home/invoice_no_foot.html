@@ -254,8 +254,9 @@
         {% for invoice in items %}
          {% if forloop.counter0|divisibleby:2 %}
           <tr style="width: 60px; height: 60px;">
-            <td class="qty">{{ invoice.item }}</td>
-            <td class="qty">{{  invoice.source  }}</td>
+            <pdf:language name="arabic"/> 
+            <td class="qty" style="font-family: markazi">{{ invoice.item }}</td>
+            <td class="qty" style="font-family: markazi">{{  invoice.source  }}</td>
             <td class="qty">{{  invoice.quantity  }}</td>
             <td class="qty">{{  invoice.length  }}</td>
             <td class="qty">{{  invoice.width  }}</td>
@@ -267,8 +268,9 @@
           {% else %}
 
           <tr style="width: 60px; height: 60px;" class="b">
-            <td class="qty">{{ invoice.item }}</td>
-            <td class="qty">{{  invoice.source  }}</td>
+            <pdf:language name="arabic"/> 
+            <td class="qty" style="font-family: markazi">{{ invoice.item }}</td>
+            <td class="qty" style="font-family: markazi">{{  invoice.source  }}</td>
             <td class="qty">{{  invoice.quantity  }}</td>
             <td class="qty">{{  invoice.length  }}</td>
             <td class="qty">{{  invoice.width  }}</td>
