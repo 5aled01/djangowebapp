@@ -286,7 +286,7 @@
         var cbm = (length * width * height * quantity) / 1000000;
         cbm = cbm + (cbm * aug) / 100;
 
-        const price = cbm * rate * quantity;
+        const price = cbm * rate ;
 
         cbmInput.textContent = cbm.toFixed(2);
         priceInput.textContent = price.toFixed(2);

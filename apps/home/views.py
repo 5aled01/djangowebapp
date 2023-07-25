@@ -141,7 +141,7 @@ def pages(request):
             total_cbm = 0
             total_price = 0
             print('----', invoice.id)
-                # Get all items related to the invoice
+            # Get all items related to the invoice
             items = invoice.items.all()
          
             context['invoice_summaries'] = invoice_summaries
@@ -597,10 +597,24 @@ def generate_pdf(request):
         invoice_summaries = []
         context = {}
 
+        container = invoice.containers.first() 
+
+        if container:
+            container_data = {
+                'id': container.id,
+                'status': container.status,
+                'size': container.size,
+                'price': container.price,
+                'created_date': container.created_date,
+                'invoice_id': invoice.id,
+            }
+
+        #print("containers", container_data)
         # Get all items related to the invoice
         items = invoice.items.all()
             
         context['invoice_summaries'] = invoice_summaries
+        context['container_data'] = container_data
         context['invoice'] = invoice
         context['customer'] = invoice.customer
         context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
