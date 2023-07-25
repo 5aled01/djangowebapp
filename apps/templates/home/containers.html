@@ -82,11 +82,11 @@
 <table class="table align-items-center table-flush">
   <thead class="thead-light">
     <tr>
-      <th scope="col" class="sort" data-sort="id_manifest">Manifest id</th>
+      <th scope="col" class="sort" data-sort="id_manifest">Serial number</th> 
 <th scope="col" class="sort" data-sort="id_size">Size</th>
 <th scope="col" class="sort" data-sort="created_date">Created date</th>
 <th scope="col" class="sort" data-sort="created_date">Status</th>
-<th scope="col" class="sort" data-sort="created_date">Price</th>
+<th scope="col" class="sort" data-sort="created_date">Id Manifest</th>
 <th scope="col" class="sort"></th>
 </tr>
 </thead>
@@ -97,7 +97,7 @@
 <td>{{ container.size }}</td>
 <td>{{ container.created_date}}</td>
 <td>{{ container.status}}</td>
-<td>{{ container.price}}</td>
+<td>{{ container.manifaist}}</td>
 <td class="text-center">
   <div class="dropdown">
     <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -191,10 +191,10 @@
               <!-- ... previous code ... -->  
               <div class="pl-lg-4">
                 <div class="row">
-                  <div class="col-lg-6">
+                  <div class="col-lg-4">
                     <div class="form-group">
-                      <label class="form-control-label" for="input-name">Id Manifest</label>
-                      <input type="text" id="input-id" name="id" class="form-control" placeholder="Id Manifest..." required>
+                      <label class="form-control-label" for="input-name">Serial number</label>
+                      <input type="text" id="input-id" name="id" class="form-control" placeholder="Serial number..." required>
                     </div>
                   </div>
               <div class="col-lg-2">
@@ -206,8 +206,8 @@
 
               <div class="col-lg-4">
                 <div class="form-group">
-                  <label class="form-control-label" for="input-Phone">Price</label>
-                  <input type="number" id="input-price" name="price" class="form-control" value="20" placeholder="Container price..." required>
+                  <label class="form-control-label" for="input-Phone">Id Manifest</label>
+                  <input type="number" id="input-manifait" name="manifaist" class="form-control" placeholder="Id Manifest..." required>
                 </div>
               </div>
 

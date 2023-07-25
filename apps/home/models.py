@@ -17,6 +17,7 @@ class Customer(models.Model):
 
 class Container(models.Model):
     id = models.CharField(primary_key=True, max_length=100)
+    manifaist = models.IntegerField(default=20)
     invoice = models.ManyToManyField('Invoice', related_name='containers')
     created_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=100, default='Just Created')
@@ -25,7 +26,7 @@ class Container(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.id or not self.pk:
-            self.id = 'MRSU' + str(uuid.uuid4().fields[-1])[:6]
+            self.id = 'MRSU' + str(uuid.uuid4().fields[-1])[:5]
         super().save(*args, **kwargs)
 
 

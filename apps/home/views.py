@@ -340,7 +340,6 @@ def delete_customer(request):
 @login_required(login_url="/login/")
 def add_container(request):
     
-
     succ = 0
     
     if request.method == 'POST':
@@ -351,7 +350,7 @@ def add_container(request):
             container.created_date = datetime.now()
             print('---------')
 
-            num_results = Container.objects.filter(id = container.id).count()
+            num_results = Container.objects.filter(id = container.manifaist).count()
 
             if num_results == 1:
                 messages.success(request, "Container with the provided ID already exists.")
@@ -503,7 +502,7 @@ def Invoice_save(request):
             totalpack += item["quantity"]
 
         #add create message
-        container, create = Container.objects.get_or_create(id=item["manifest"])
+        container, create = Container.objects.get_or_create(manifaist=item["manifest"])
         print('----------->',container)
         container.invoice.add(invoice)
         container.save()
@@ -604,7 +603,7 @@ def generate_pdf(request):
                 'id': container.id,
                 'status': container.status,
                 'size': container.size,
-                'price': container.price,
+                'manifaist': container.manifaist,
                 'created_date': container.created_date,
                 'invoice_id': invoice.id,
             }

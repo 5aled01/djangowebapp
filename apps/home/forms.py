@@ -60,4 +60,4 @@ class ItemForm(forms.ModelForm):
 class ContainerForm(forms.ModelForm):
     class Meta:
         model = Container
-        fields = ('id', 'size', 'price')
+        fields = ('id', 'size', 'manifaist')
