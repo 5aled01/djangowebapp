@@ -22,7 +22,7 @@ class Container(models.Model):
     created_date = models.DateTimeField(default=timezone.now)
     status = models.CharField(max_length=100, default='Just Created')
     size = models.IntegerField(default=20)
-    price = models.IntegerField(default=20)
+    price = models.IntegerField(default=0)
 
     def save(self, *args, **kwargs):
         if not self.id or not self.pk:
