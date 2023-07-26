@@ -130,6 +130,51 @@ def pages(request):
             customer_id = request.GET.get('customer_id')
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
+
+            invoices = customer.invoices.all()
+
+            #print("------->",invoices)
+
+            invoice_summaries = []
+
+            total_quantity = 0
+            total_cbm = 0
+            total_price = 0
+            total_price_paid = 0
+            total_price_unpaid = 0
+
+            for invoice in invoices:
+                # Get all items related to the invoice
+                items = invoice.items.all()
+                invoice_summary = {
+                    'invoice_id': invoice.id,
+                    'status': invoice.status,
+                    'customer_name': invoice.customer.name,
+                    'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
+                    'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
+                    'total_price': items.aggregate(Sum('price'))['price__sum']
+                 }
+                
+
+                # Calculate and add the quantities, CBM, and price for each item
+                invoice_summaries.append(invoice_summary)
+
+                if invoice.status == 'Unpaid':
+                    total_price_unpaid += invoice_summary['total_price'] or 0
+                else:
+                    total_price_paid += invoice_summary['total_price'] or 0
+
+
+                total_quantity += invoice_summary['total_quantity'] or 0
+                total_cbm += invoice_summary['total_cbm'] or 0
+                total_price += invoice_summary['total_price'] or 0
+            
+            context['invoice_summaries'] = invoice_summaries
+            context['total_price_unpaid'] = total_price_unpaid
+            context['total_price_paid'] = total_price_paid
+            context['total_quantity'] = total_quantity
+            context['total_cbm'] = total_cbm
+            context['total_price'] = total_price
         
         if load_template == 'invoice_view.html':
             invoice_id = request.GET.get('invoice_id')
@@ -283,10 +328,57 @@ def edit_customer(request):
 
 @login_required(login_url="/login/")
 def customer_detail(request, customer_id):
-    customer = get_object_or_404(Customer, id=customer_id)
-    form = CustomerForm(instance=customer)
-    context = {'form': form, 'customer': customer}
-    return render(request, 'home/customer_detail.html', context)
+            context = {}
+            customer = get_object_or_404(Customer, id=customer_id)
+            
+            invoices = customer.invoices.all()
+            context['customer'] = customer
+
+
+            #print("------->",invoices)
+
+            invoice_summaries = []
+
+            total_quantity = 0
+            total_cbm = 0
+            total_price = 0
+            total_price_paid = 0
+            total_price_unpaid = 0
+
+            for invoice in invoices:
+                # Get all items related to the invoice
+                items = invoice.items.all()
+                invoice_summary = {
+                    'invoice_id': invoice.id,
+                    'status': invoice.status,
+                    'customer_name': invoice.customer.name,
+                    'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
+                    'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
+                    'total_price': items.aggregate(Sum('price'))['price__sum']
+                 }
+                
+
+                # Calculate and add the quantities, CBM, and price for each item
+                invoice_summaries.append(invoice_summary)
+
+                if invoice.status == 'Unpaid':
+                    total_price_unpaid += invoice_summary['total_price'] or 0
+                else:
+                    total_price_paid += invoice_summary['total_price'] or 0
+
+
+                total_quantity += invoice_summary['total_quantity'] or 0
+                total_cbm += invoice_summary['total_cbm'] or 0
+                total_price += invoice_summary['total_price'] or 0
+            
+            context['invoice_summaries'] = invoice_summaries
+            context['total_price_unpaid'] = total_price_unpaid
+            context['total_price_paid'] = total_price_paid
+            context['total_quantity'] = total_quantity
+            context['total_cbm'] = total_cbm
+            context['total_price'] = total_price
+
+            return render(request, 'home/customer_detail.html', context)
 
 @login_required(login_url="/login/")
 def add_customer(request):
@@ -430,7 +522,7 @@ def invoices(request):
                 )
             except ValueError:
                 try:
-                    uuid.UUID(search_query)  # Check if search_query is a valid UUID
+
                     invoices = invoices.filter(
                         Q(customer__id=search_query)
                     )
@@ -582,6 +674,34 @@ def delete_invoice(request):
         messages.error(request, 'Invalid request')
 
     return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
+
+
+def change_invoice_status(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        customer_id = request.POST.get('customer_id')
+        try:
+            invoice = Invoice.objects.get(id=invoice_id)
+            invoice.status = 'Paid'
+            invoice.save()
+            messages.success(request, 'Invoice status change successfully')
+
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Invoice not found')
+    else:
+        messages.error(request, 'Invalid request')
+
+    invoice = get_object_or_404(Invoice, id=invoice_id)
+
+    #context['customer_id'] = customer_id
+    
+    #load_template = 'customer_detail.html'
+
+    return redirect('customer_detail', customer_id=customer_id)
+
+    #invoice_view.html?invoice_id={{ invoice_summary.invoice_id }}
+
+    #return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 
 

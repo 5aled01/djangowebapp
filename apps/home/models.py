@@ -34,6 +34,7 @@ class Invoice(models.Model):
     id = models.CharField(primary_key=True, max_length=100, editable=False)
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='invoices')
     date = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=100, default='Unpaid')
 
     def save(self, *args, **kwargs):
         if not self.id or not self.pk:

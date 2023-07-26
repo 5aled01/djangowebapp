@@ -84,13 +84,113 @@
                     </div>
                     </div>
                   </form>
+                    <br/> <br/> 
+        
+                        <div class="card">
+                          <div class="card-body">
+                            
+                            
+                              <div class="card-header p-4">
+                              <div class="float-left"> <h3 class="mb-0">List of invoices </h3>
+                              ------- </div>
+                              
+                              </div>
+                              <div class="card-body">
+                              <div class="row mb-4">
+                              <div class="col-sm-6">
+                              
+                              </div>
+                              <div class="col-sm-6 ">
+                              </div>
+                              </div>
+                              <div class="table-responsive-sm">
+                              <table class="table table-striped">
+                              <thead>
+                              <tr>
+                              <th>رقم الفاتورة</th>
+                              <th class="right">عدد القطع</th>
+                              <th class="center">المقاس</th>
+                              <th class="right">الكلفة</th>
+                              <th class="right">حالة الفاتورة</th>
+                              <th class="center"></th>
+
+                              </tr>
+                              </thead>
+                              <tbody>
+                              <tr>
+                                  {% for invoice_summary in invoice_summaries %}
+                                      <td class="left strong">{{ invoice_summary.invoice_id }}</td>
+                                      <td class="right">{{ invoice_summary.total_quantity }}</td>
+                                      <td class="center">{{ invoice_summary.total_cbm }}</td>
+                                      <td class="right">{{ invoice_summary.total_price }}</td>
+                                      {% if invoice_summary.status == 'Unpaid' %}
+                                        <td class="right" style="color: rgb(255, 59, 59);">{{ invoice_summary.status }}</td>
+                                      {% else %}
+                                      <td class="right" style="color: rgb(86, 172, 0);">{{ invoice_summary.status }}</td>
+                                      {% endif %}
+
+
+                                      <td class="text-center">
+                                        <div class="dropdown">
+                                          <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                          </a>
+                                          <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                                            <a class="dropdown-item" href="/invoice_view.html?invoice_id={{ invoice_summary.invoice_id }}" >View Invoice</a>
+                                          </div>
+                                        </div>
+                                      </td>
+                              </tr>
+                                  {% endfor %}
+                              
+                              <tr>
+                  
+                                  <td class="left strong"></td>
+                                  <td class="left strong"></td>
+                                  <td class="left strong"></td>
+                                  <td class="right">Total Paid</td>
+                                  <td class="right" style="color: rgb(86, 172, 0);" ><strong>{{ total_price_paid }} AED</strong></td>
+                                  <td class="left strong"></td>
+                              </tr>
+
+                              <tr>
+                  
+                                <td class="left strong"></td>
+                                <td class="left strong"></td>
+                                <td class="left strong"></td>
+                                <td class="right">Total Unpaid</td>
+                                <td class="right" style="color: rgb(201, 107, 107);"><strong>{{ total_price_unpaid }} AED</strong></td>
+                                <td class="left strong"></td>
+                            </tr>
+                              </tbody>
+                              </table>
+                              </div>
+                              <div class="row">
+                              <div class="col-lg-4 col-sm-5">
+                              </div>
+                              <div class="col-lg-4 col-sm-5 ml-auto">
+                              </div>
+                              </div>
+                              </div>
+                              <div class="card-footer bg-white">
+                              </div>
+
+                                      </div>
+                                      </div>
+                                      
+
+
+
                     </div>
                     </div>
-                    </div>
-                    </div>
+</div>
+
+
+
+                    
                     {% include "includes/footer.html" %}
                     
-                    </div>
+                    
                     {% endblock content %}
                     
                     <!-- Specific JS goes HERE --> 

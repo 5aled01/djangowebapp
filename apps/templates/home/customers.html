@@ -75,6 +75,7 @@
             <thead class="thead-light">
               <tr>
                 <th scope="col" class="sort" data-sort="name">Name</th>
+                <th scope="col" class="sort" data-sort="name">Id</th>
                 <th scope="col" class="sort" data-sort="phone">Phone</th>
                 <th scope="col" class="sort" data-sort="brand">Brand</th>
                 <th scope="col" class="sort" data-sort="brand">Partner</th>
@@ -85,6 +86,7 @@
               {% for customer in customers %}
               <tr>
                 <td>{{ customer.name }}</td>
+                <td>{{ customer.id }}</td>
                 <td>{{ customer.phone_number }}</td>
                 <td>{{ customer.brand }}</td>
                 <td>{{ customer.partner }}</td>
@@ -94,7 +96,7 @@
                       <i class="fas fa-ellipsis-v"></i>
                     </a>
                     <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                      <a class="dropdown-item" href="/customer_detail.html?customer_id={{ customer.id }}">Modify</a>
+                      <a class="dropdown-item" href="/customer_detail.html?customer_id={{ customer.id }}">See Details</a>
                       <a class="dropdown-item" href="/invoices_detail.html?customer_id={{ customer.id }}">Add Invoices</a>
                     </div>
                   </div>
