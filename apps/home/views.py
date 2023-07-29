@@ -31,7 +31,7 @@ from django.urls import reverse
 from django.db.models import Sum, Q
 import json
 from django.utils.crypto import get_random_string
-from .models import Customer, Container, InvoiceImage, Item, Invoice
+from .models import Customer, Container, InvoiceImage, Item, Invoice, Transaction
 
 
 
@@ -103,6 +103,8 @@ def index(request):
 def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
+
+
     try:
 
         load_template = request.path.split('/')[-1]
@@ -121,7 +123,7 @@ def pages(request):
             else:
                 customers = Customer.objects.all()
 
-            paginator = Paginator(customers, per_page=4)
+            paginator = Paginator(customers, per_page=20)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
             context['customers'] = page_obj
@@ -131,8 +133,8 @@ def pages(request):
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
 
+        
             invoices = customer.invoices.all()
-
             #print("------->",invoices)
 
             invoice_summaries = []
@@ -140,38 +142,50 @@ def pages(request):
             total_quantity = 0
             total_cbm = 0
             total_price = 0
-            total_price_paid = 0
-            total_price_unpaid = 0
+            total_debit = 0
+            total_credit = 0
 
             for invoice in invoices:
                 # Get all items related to the invoice
                 items = invoice.items.all()
+
+                if invoice.status != 'Unpaid':
+                    transaction = get_object_or_404(Transaction, invoice=invoice)
+                else: 
+                    transaction = 'noTransaction'
+
+                print("----------> transaction: ", transaction)
+
                 invoice_summary = {
-                    'invoice_id': invoice.id,
-                    'status': invoice.status,
-                    'customer_name': invoice.customer.name,
-                    'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
-                    'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
-                    'total_price': items.aggregate(Sum('price'))['price__sum']
-                 }
-                
+                'invoice_id': invoice.id,
+                'transaction': transaction,
+                'transaction_date': transaction.date if invoice.status != 'Unpaid' else datetime.min,
+                'status': invoice.status,
+                'customer_name': invoice.customer.name,
+                'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
+                'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
+                'total_price': items.aggregate(Sum('price'))['price__sum']
+            }
 
                 # Calculate and add the quantities, CBM, and price for each item
                 invoice_summaries.append(invoice_summary)
 
-                if invoice.status == 'Unpaid':
-                    total_price_unpaid += invoice_summary['total_price'] or 0
-                else:
-                    total_price_paid += invoice_summary['total_price'] or 0
-
+                if invoice.status == 'Paid':
+                    if transaction.transaction_type == 'debit': 
+                        total_debit += transaction.amount or 0
+                    else:
+                        total_credit += transaction.amount or 0
 
                 total_quantity += invoice_summary['total_quantity'] or 0
                 total_cbm += invoice_summary['total_cbm'] or 0
                 total_price += invoice_summary['total_price'] or 0
             
+
+            #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
+
             context['invoice_summaries'] = invoice_summaries
-            context['total_price_unpaid'] = total_price_unpaid
-            context['total_price_paid'] = total_price_paid
+            context['total_debit'] = total_debit
+            context['total_credit'] = total_credit
             context['total_quantity'] = total_quantity
             context['total_cbm'] = total_cbm
             context['total_price'] = total_price
@@ -196,6 +210,8 @@ def pages(request):
             context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
             context['totalcbm'] = items.aggregate(s=Sum("CBM"))["s"]
             context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
+
+            context['new_balance'] = invoice.customer.balance - items.aggregate(s=Sum("price"))["s"]
 
         if load_template == 'container_detail.html':
             container_id = request.GET.get('container_id')
@@ -245,7 +261,7 @@ def pages(request):
             else:
                 containers = Container.objects.all()
 
-            paginator = Paginator(containers, per_page=4)
+            paginator = Paginator(containers, per_page=20)
             page_number = request.GET.get('page')
             page_obj = paginator.get_page(page_number)
             context['containers'] = page_obj
@@ -269,19 +285,23 @@ def pages(request):
                             )
                         except ValueError:
                             try:
-                                uuid.UUID(search_query)  # Check if search_query is a valid UUID
                                 invoices = invoices.filter(
                                     Q(customer__id=search_query)
                                 )
                             except ValueError:
-                                invoices = invoices.filter(
-                                    Q(id__icontains=search_query)
-                                )
-                            except:
-                                invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+                                try:
+                                    invoices = invoices.filter(
+                                        Q(id=search_query)
+                                    )
+                                except ValueError:
+                                    invoices = invoices.filter(
+                                        Q(id__icontains=search_query)
+                                    )
+                                except:
+                                    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
 
 
-                paginator = Paginator(invoices, per_page=4)
+                paginator = Paginator(invoices, per_page=20)
                 page_number = request.GET.get('page')
                 page_obj = paginator.get_page(page_number)
                 
@@ -322,61 +342,75 @@ def edit_customer(request):
     else:
         form = CustomerForm(instance=customer)
 
-    context = {'form': form, 'customer': customer}
-    return render(request, 'home/customer_detail.html', context)
+    context = {'customer_id': customer_id}
+    return redirect(request, 'home/customer_detail.html', context)
 
 
 @login_required(login_url="/login/")
 def customer_detail(request, customer_id):
             context = {}
+
             customer = get_object_or_404(Customer, id=customer_id)
-            
-            invoices = customer.invoices.all()
             context['customer'] = customer
 
-
-            #print("------->",invoices)
-
+            invoices = customer.invoices.all()
             invoice_summaries = []
 
             total_quantity = 0
             total_cbm = 0
             total_price = 0
-            total_price_paid = 0
-            total_price_unpaid = 0
+            total_debit = 0
+            total_credit = 0
 
             for invoice in invoices:
+
                 # Get all items related to the invoice
                 items = invoice.items.all()
+
+                if invoice.status != 'Unpaid':
+                    transaction = get_object_or_404(Transaction, invoice=invoice)
+                else: 
+                    transaction = 'noTransaction'
+
+                print("----------> transaction: ", transaction)
+
                 invoice_summary = {
-                    'invoice_id': invoice.id,
-                    'status': invoice.status,
-                    'customer_name': invoice.customer.name,
-                    'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
-                    'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
-                    'total_price': items.aggregate(Sum('price'))['price__sum']
-                 }
+                'invoice_id': invoice.id,
+                'transaction': transaction,
+                'transaction_date': transaction.date if invoice.status != 'Unpaid' else datetime.min,
+                'status': invoice.status,
+                'customer_name': invoice.customer.name,
+                'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
+                'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
+                'total_price': items.aggregate(Sum('price'))['price__sum']
+            }
+
+                
                 
 
                 # Calculate and add the quantities, CBM, and price for each item
                 invoice_summaries.append(invoice_summary)
 
-                if invoice.status == 'Unpaid':
-                    total_price_unpaid += invoice_summary['total_price'] or 0
-                else:
-                    total_price_paid += invoice_summary['total_price'] or 0
-
+                if invoice.status == 'Paid':
+                    if transaction.transaction_type == 'debit': 
+                        total_debit += transaction.amount or 0
+                    else:
+                        total_credit += transaction.amount or 0
 
                 total_quantity += invoice_summary['total_quantity'] or 0
                 total_cbm += invoice_summary['total_cbm'] or 0
                 total_price += invoice_summary['total_price'] or 0
             
+
+            #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
+
             context['invoice_summaries'] = invoice_summaries
-            context['total_price_unpaid'] = total_price_unpaid
-            context['total_price_paid'] = total_price_paid
+            context['total_debit'] = total_debit
+            context['total_credit'] = total_credit
             context['total_quantity'] = total_quantity
             context['total_cbm'] = total_cbm
             context['total_price'] = total_price
+        
 
             return render(request, 'home/customer_detail.html', context)
 
@@ -455,7 +489,7 @@ def add_container(request):
 
     containers = Container.objects.all()
 
-    paginator = Paginator(containers, per_page=4)
+    paginator = Paginator(containers, per_page=20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context['containers'] = page_obj
@@ -533,7 +567,7 @@ def invoices(request):
                 except:
                     pass      
 
-    paginator = Paginator(invoices, per_page=4)
+    paginator = Paginator(invoices, per_page=20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
@@ -677,21 +711,51 @@ def delete_invoice(request):
 
 
 def change_invoice_status(request):
+
     if request.method == 'POST':
         invoice_id = request.POST.get('invoice_id')
         customer_id = request.POST.get('customer_id')
+        totalprice = float(request.POST.get('totalprice'))
+
+        option = request.POST.get('option')
+        amount = float(request.POST.get('amount'))
+
+        customer = Customer.objects.get(id=customer_id)
+        balance = float(customer.balance)
+        
+        dif = amount - totalprice
+
+        balance = balance + dif
+        
+        customer.balance = balance
+
+        print("amount :", amount)
+        print("totalprice :", totalprice)
+        print("dif :", dif)
+        print("balance :", balance)
+ 
+
         try:
             invoice = Invoice.objects.get(id=invoice_id)
+
+            Transaction.objects.create(
+                invoice=invoice,
+                amount=amount,
+                rest=balance,
+                transaction_type=option,
+                date=timezone.now(),
+            )
+
             invoice.status = 'Paid'
             invoice.save()
+            customer.save()
             messages.success(request, 'Invoice status change successfully')
 
         except Invoice.DoesNotExist:
             messages.error(request, 'Invoice not found')
     else:
         messages.error(request, 'Invalid request')
-
-    invoice = get_object_or_404(Invoice, id=invoice_id)
+        invoice = get_object_or_404(Invoice, id=invoice_id)
 
     #context['customer_id'] = customer_id
     

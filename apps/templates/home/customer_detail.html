@@ -11,11 +11,18 @@
   <!-- Header container -->
   <div class="container-fluid d-flex align-items-center">
     <div class="row">
-      <div class="col-lg-10 col-md-10">
-        <h1 class="display-1 text-white"> 
-          Customer {{ customer.name }}
+      <div class="col-lg-18 col-md-12">
+        <h1 class="display-3 text-white"> 
+          Customer {{ customer.name }}, id: {{ customer.id }}
         </h1>
       </div>
+
+      <div class="col-lg-10 col-md-4">
+        <h1 class="display-3 text-white"> 
+          Balance {{ customer.balance }} AED
+        </h1>
+      </div>
+      
     </div>
   </div>
 </div>
@@ -112,6 +119,9 @@
                               <th class="center">المقاس</th>
                               <th class="right">الكلفة</th>
                               <th class="right">حالة الفاتورة</th>
+                              <th class="right">Debit</th>
+                              <th class="right">Credit</th>
+                              <th class="right">Balance</th>
                               <th class="center"></th>
 
                               </tr>
@@ -125,9 +135,26 @@
                                       <td class="right">{{ invoice_summary.total_price }}</td>
                                       {% if invoice_summary.status == 'Unpaid' %}
                                         <td class="right" style="color: rgb(255, 59, 59);">{{ invoice_summary.status }}</td>
+                                        <td class="right">-----</td>
+                                      <td class="right">-----</td>
+                                      <td class="right">-----</td>
                                       {% else %}
                                       <td class="right" style="color: rgb(86, 172, 0);">{{ invoice_summary.status }}</td>
+                                        {% if invoice_summary.transaction.transaction_type == 'debit' %}
+                                          <td class="right">{{ invoice_summary.transaction.amount }}</td>
+                                          <td class="right">-----</td>
+
+                                        {% else %}
+
+                                        <td class="right">-----</td>
+                                        <td class="right">{{ invoice_summary.transaction.amount }}</td>
+
+                                        {% endif %}
+
+                                        <td class="right">{{ invoice_summary.transaction.rest }}</td>
+
                                       {% endif %}
+                                      
 
 
                                       <td class="text-center">
@@ -148,20 +175,19 @@
                                   <td class="left strong"></td>
                                   <td class="left strong"></td>
                                   <td class="left strong"></td>
-                                  <td class="right">Total Paid</td>
-                                  <td class="right" style="color: rgb(86, 172, 0);" ><strong>{{ total_price_paid }} AED</strong></td>
+                                  <td class="left strong"></td>
+                                  <td class="right strong"><strong>Total </strong> </td>
+                                  <td class="right"><strong>{{ total_debit }} AED</strong></td>
+                                  <td class="right"><strong>{{ total_credit }} AED</strong></td>
+
+                                  {% if customer.balance > 0 %}
+                                    <td class="right" style="color: rgb(86, 172, 0);" ><strong>{{ customer.balance }} AED</strong></td>
+                                  {% else %}
+                                    <td class="right" style="color: rgb(201, 107, 107);" ><strong>{{ customer.balance }} AED</strong></td>
+                                  {% endif %}
                                   <td class="left strong"></td>
                               </tr>
 
-                              <tr>
-                  
-                                <td class="left strong"></td>
-                                <td class="left strong"></td>
-                                <td class="left strong"></td>
-                                <td class="right">Total Unpaid</td>
-                                <td class="right" style="color: rgb(201, 107, 107);"><strong>{{ total_price_unpaid }} AED</strong></td>
-                                <td class="left strong"></td>
-                            </tr>
                               </tbody>
                               </table>
                               </div>

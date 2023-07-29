@@ -9,6 +9,21 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <link rel="license" href="https://www.opensource.org/licenses/mit-license/" />
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="canonical" href="https://appseed.us/admin-dashboards/django-dashboard-argon">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+<!-- Icons -->
+<link rel="stylesheet" href="/static/assets/vendor/nucleo/css/nucleo.css" type="text/css">
+<link rel="stylesheet" href="/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
+<!-- Page plugins -->
+<!-- Argon CSS -->
+<link rel="stylesheet" href="/static/assets/css/argon.css?v=1.2.0" type="text/css">
+
+
     <style type="text/css">
       body {
         margin-top: 20px;
@@ -65,7 +80,11 @@
                 <div class="col-sm-6">
                   <div class="text-muted">
                     <h5 class="font-size-15 mb-3">Billed To:</h5>
-                    <h5 class="font-size-15 mb-2">{{ customer.name }}</h5>
+                    <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
+                    <a href="/customer_detail.html?customer_id={{ customer.id }}">
+                      <h5 class="font-size-15 mb-2">{{ customer.name }} </h5>
+                      <i class="fa fa-address-book"></i>
+                    </a> 
                     <p>Phone: {{ customer.phone_number }}</p>
                   </div>
                 </div>
@@ -145,7 +164,7 @@
                           Grand Total
                         </th>
                         <td class="border-0 text-end">
-                          <strong><p class="m-0 fw-semibold">{{totalprice}}</p></strong>
+                          <strong><p class="m-0 fw-semibold">{{totalprice}} AED</p></strong>
                         </td>
                       </tr>
                     </tbody>
@@ -178,6 +197,8 @@
                       
                       
                   </form>
+
+                  
                   </div>
                 </div>
               </div>

@@ -7,8 +7,10 @@ class Customer(models.Model):
     name = models.CharField(max_length=100)
     phone_number = models.CharField(max_length=20)
     brand = models.CharField(max_length=100)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     partner = models.CharField(max_length=100, default='Gemal')
     created_date = models.DateTimeField(default=timezone.now)
+    
 
     def save(self, *args, **kwargs):
         if not self.id or not self.pk:
@@ -60,3 +62,12 @@ class InvoiceImage(models.Model):
 
     def __str__(self):
         return f"Image for Invoice #{self.invoice.id}"
+    
+
+
+class Transaction(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='transactions')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    rest = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))
+    date = models.DateTimeField(default=timezone.now)

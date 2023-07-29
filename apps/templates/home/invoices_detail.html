@@ -12,6 +12,18 @@
 />
 <link rel="license" href="https://www.opensource.org/licenses/mit-license/" />
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="canonical" href="https://appseed.us/admin-dashboards/django-dashboard-argon">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+<!-- Icons -->
+<link rel="stylesheet" href="/static/assets/vendor/nucleo/css/nucleo.css" type="text/css">
+<link rel="stylesheet" href="/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
+<!-- Page plugins -->
+<!-- Argon CSS -->
+<link rel="stylesheet" href="/static/assets/css/argon.css?v=1.2.0" type="text/css">
+
+
 <div
   class="header pb-4 d-flex align-items-center"
   style="
@@ -27,8 +39,10 @@
   <div class="container-fluid d-flex align-items-center">
     <div class="row">
       <div class="col-lg-10 col-md-10">
-        <h1 class="display-1 text-white">
+        <h1 class="display-2 text-white">
+          <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
           Add invoice for the customer {{ customer.name }}
+        </a>
         </h1>
       </div>
     </div>
@@ -42,7 +56,7 @@
         <div class="card-body">
           <article>
             <!--/sinvoice_save-->
-            <form id="invoice-form" action="#" method="POST">
+            <form id="invoice-form" action="#" id="navbar-search-main" method="POST">
               {% csrf_token %}
 
               <h1>Customer</h1>
@@ -187,13 +201,24 @@
                     value="{{ customer.id }}"
                   />
                   <td id="rm">
-                    <button type="submit" class="btn btn-sm btn-primary">
+                    
+                    <div id="loading-spinner" class="d-none">
+                      <i class="fas fa-circle-notch fa-spin"></i>
+                    </div>
+
+                    <button type="submit" class="btn btn-sm btn-primary"  id="save_invoice" data-target="#navbar-search-main">
                       Save Invoice
                     </button>
+
+                    
+
                   </td>
                 </tr>
               </table>
             </form>
+
+            
+
           </article>
         </div>
       </div>
@@ -208,6 +233,7 @@
 
 {% block javascripts %}
 <script>
+
   // Get the current date
   const currentDate = new Date();
 
@@ -338,6 +364,13 @@
 
     const invoiceForm = document.getElementById("invoice-form");
     invoiceForm.addEventListener("submit", function (event) {
+      
+      const save_invoice = document.getElementById("save_invoice");
+      save_invoice.disabled = true;
+
+      $("#loading-spinner").removeClass("d-none");
+
+
       event.preventDefault();
 
       const rows = itemList.querySelectorAll("tr");
@@ -405,4 +438,11 @@
     });
   });
 </script>
+
+
+<script>
+  
+</script>
+
+
 {% endblock javascripts %}
