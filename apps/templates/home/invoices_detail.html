@@ -201,11 +201,10 @@
                     value="{{ customer.id }}"
                   />
                   <td id="rm">
-                    
                     <div id="loading-spinner" class="d-none">
                       <i class="fas fa-circle-notch fa-spin"></i>
                     </div>
-
+                    
                     <button type="submit" class="btn btn-sm btn-primary"  id="save_invoice" data-target="#navbar-search-main">
                       Save Invoice
                     </button>
@@ -399,7 +398,7 @@
           width: parseFloat(widthInput.value) || 0,
           height: parseFloat(heightInput.value) || 0,
           CBM: parseFloat(cbmInput.textContent) || 0,
-          rate: parseFloat(rateInput.textContent) || 0,
+          rate: parseFloat(rateInput.value) || 0,
           price: parseFloat(priceInput.textContent) || 0,
           manifest: manifestInput.value || 0,
           id_customer: customerInput.value.trim(),

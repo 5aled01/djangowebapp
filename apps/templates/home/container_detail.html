@@ -4,6 +4,8 @@
 
 {% block content %}
 
+
+
 <div class="header pb-4 d-flex align-items-center" 
      style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
   <!-- Mask -->
@@ -20,19 +22,24 @@
   </div>
 </div>
 <!-- Page content -->
-<div class="container-fluid mt--2">
+<div class="container-fluid mt--2" >
   <div class="row">
     <div class="col-xl-12 order-xl-1">
       <div class="card">
         <div class="card-body">
           
           
-            <div class="card-header p-4">
-            <div class="float-right"> <h3 class="mb-0">MANIFEST {{container.manifaist}}</h3>
-            {{ container.created_date }} </div>
             
-            </div>
-            <div class="card-body">
+            <div class="card-body" id="dvContainer">
+              
+                <div class="float-right"> <h3 class="mb-0">MANIFEST {{container.manifaist}}</h3>
+                {{ container.created_date }} </div> <br/><br/>
+              <!-- Icons -->
+              <!-- Page plugins -->
+              <!-- Argon CSS -->
+              <link rel="stylesheet" href="/static/assets/css/argon.css?v=1.2.0" type="text/css">
+
+
             <div class="row mb-4">
             <div class="col-sm-6">
             
@@ -84,15 +91,23 @@
               <div class="row">
                 <div class="col-md-10 "> 
               </div>
-                <div class=" mt-md-0 text-md-right">
+                <div class="mt-md-0 text-md-right">
                   <form action="{% url 'delete_container' %}" method="post" onsubmit="return confirm('Are you sure you want to delete this container?');" class="d-inline">
                     {% csrf_token %}
                     <input type="hidden" name="container_id" value="{{ container.id }}">
                     <button type="submit" class="btn btn-sm btn-danger">Delete container</button>
-                    </div>
-                    </div>
-                    </div>
                   </form>
+
+                  <form id="form1" class="d-inline">
+                    <input type="button" value="Print!" class="btn btn-sm btn-light" id="btnPrint" />
+                  </form>
+
+                </div>
+              </div>
+              </div>
+
+                  
+
                     </div>
                     </div>
                     </div>
@@ -104,4 +119,18 @@
                     {% endblock content %}
                     
                     <!-- Specific JS goes HERE --> 
-                    {% block javascripts %}{% endblock javascripts %}
+                    {% block javascripts %}
+                    
+<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript">
+        $("#btnPrint").live("click", function () {
+            var divContents = $("#dvContainer").html();
+            var printWindow = window.open('', '', 'height=600,width=600');
+            printWindow.document.write('<html><head><title>PDF Container</title></head><body>');
+            printWindow.document.write(divContents);
+            printWindow.document.close();
+            printWindow.print();
+        });
+    </script>
+
+                    {% endblock javascripts %}

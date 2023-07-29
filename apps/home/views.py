@@ -45,6 +45,12 @@ context = {}
 
 @login_required(login_url="/login/")
 def index(request):
+
+    #invoice_ids_to_update = ['INVO174400', 'INVO212087', 'INVO178535', 'INVO216389', 'INVO827928','INVO146189', 'INVO176014', 'INVO213283', 'INVO175456', 'INVO563290', 'INVO272650' ]
+    #items_to_update = Item.objects.filter(invoice__id__in=invoice_ids_to_update)
+    #items_to_update.update(rate=560.0)
+
+    #Item.objects.all().update(rate=650.0)
     customer_count = Customer.objects.count()
     total_income = Item.objects.aggregate(total=Sum('price'))['total'] or 0
     total_expenses = Container.objects.aggregate(total=Sum('price'))['total'] or 0
