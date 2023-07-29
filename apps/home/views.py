@@ -52,14 +52,14 @@ def index(request):
 
     #Item.objects.all().update(rate=650.0)
     customer_count = Customer.objects.count()
-    total_income = Item.objects.aggregate(total=Sum('price'))['total'] or 0
+    total_income = Transaction.objects.aggregate(total_income=Sum('amount'))['total_income'] or 0
     total_expenses = Container.objects.aggregate(total=Sum('price'))['total'] or 0
 
     three_days_ago = timezone.now() - timedelta(days=3)
 
     new_customer_count = Customer.objects.filter(created_date__gte=three_days_ago).count()
 
-    sum_of_prices = Item.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price'] or 0
+    sum_of_prices = Transaction.objects.filter(date__gte=three_days_ago).aggregate(total_price=Sum('amount'))['total_price'] or 0
     sum_of_expenses = Container.objects.filter(created_date__gte=three_days_ago).aggregate(total_price=Sum('price'))['total_price'] or 0
 
     # Calculate the percentage
@@ -262,10 +262,10 @@ def pages(request):
             if search_query != '':
 
                 containers = Container.objects.annotate(search=SearchVector(
-                    'id', 'created_date', 'size', 'status')).filter(search=search_query)
+                    'id', 'created_date', 'size', 'status')).filter(search=search_query).order_by('-created_date')
 
             else:
-                containers = Container.objects.all()
+                containers = Container.objects.all().order_by('-created_date')
 
             paginator = Paginator(containers, per_page=20)
             page_number = request.GET.get('page')
@@ -275,7 +275,7 @@ def pages(request):
         if load_template == 'invoices.html':
                 search_query = request.GET.get('search', '')
 
-                invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+                invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date').order_by('-date')
 
                 if search_query != '':
                     try:
@@ -304,7 +304,7 @@ def pages(request):
                                         Q(id__icontains=search_query)
                                     )
                                 except:
-                                    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
+                                        invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date').order_by('-date')
 
 
                 paginator = Paginator(invoices, per_page=20)
@@ -541,18 +541,19 @@ def invoices_detail(request):
         return HttpResponse(html_template.render(context, request))
     
 
-
 @login_required(login_url="/login/")
 def invoices(request):
     search_query = request.GET.get('search', '')
     success_message = messages.get_messages(request)
-    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date')
-
+    
+    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date').order_by('-date')
+    
     if search_query != '':
         try:
             price_query = float(search_query)
+            # Filter the invoices based on the 'items__price' field
             invoices = invoices.filter(
-                Q(total_price=price_query)
+                items__price=price_query
             )
         except ValueError:
             try:
@@ -562,33 +563,31 @@ def invoices(request):
                 )
             except ValueError:
                 try:
-
-                    invoices = invoices.filter(
-                        Q(customer__id=search_query)
-                    )
-                except ValueError:
+                    # Search by invoice ID directly on the 'id' field
                     invoices = invoices.filter(
                         Q(id__icontains=search_query)
                     )
-                except:
-                    pass      
+                except ValueError:
+                    invoices = Invoice.objects.annotate(total_price=Sum('items__price')).order_by('-date')
 
     paginator = Paginator(invoices, per_page=20)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     success_messages = messages.get_messages(request)
-   
     for message in success_messages:
         success_message = str(message)
         break
     
     success_message = None
 
-    context['invoices'] = page_obj
-    context['search_query'] = search_query
-    context['success_message']= success_message
+    context = {
+        'invoices': page_obj,
+        'search_query': search_query,
+        'success_message': success_message,
+    }
     return render(request, 'home/invoices.html', context)
+
 
 @login_required(login_url="/login/")   
 def generate_invoice_id():
