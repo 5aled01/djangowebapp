@@ -133,7 +133,7 @@
                               <tr>
                                   {% for invoice_summary in invoice_summaries %}
                                       <td class="left strong">{{ invoice_summary.invoice_id }}</td>
-                                      <td class="left strong">{{ invoice_summary.container_id }}</td>
+                                      <td class="left strong">{{ invoice_summary.container_manifaist.manifaist }}</td>
                                       <td class="right">{{ invoice_summary.total_quantity }}</td>
                                       <td class="center">{{ invoice_summary.total_cbm }}</td>
                                       <td class="right">{{ invoice_summary.total_price }}</td>
