@@ -150,6 +150,8 @@ def pages(request):
             total_price = 0
             total_debit = 0
             total_credit = 0
+            container_id = 0
+            container_manifaist = 0
 
             for invoice in invoices:
                 # Get all items related to the invoice
@@ -160,13 +162,29 @@ def pages(request):
                 else: 
                     transaction = 'noTransaction'
 
-                print("----------> transaction: ", transaction)
+
+                try:
+                    container_for_invoice = invoice.containers.get()
+                    print("Container ID:", container_for_invoice.id)
+
+                    container_id = container_for_invoice.id
+                    container_manifaist = container_for_invoice
+                    print("================")
+                except Container.DoesNotExist:
+                    print("No container found for the given invoice.")
+
+                except Container.MultipleObjectsReturned:
+                    print("Multiple containers found for the given invoice.")
+
+                # Assuming you have an invoice instance named 'invoice'
 
                 invoice_summary = {
                 'invoice_id': invoice.id,
                 'transaction': transaction,
                 'transaction_date': transaction.date if invoice.status != 'Unpaid' else datetime.min,
                 'status': invoice.status,
+                'container_id': container_id,
+                'container_manifaist': container_manifaist,
                 'customer_name': invoice.customer.name,
                 'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
                 'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
@@ -367,6 +385,8 @@ def customer_detail(request, customer_id):
             total_price = 0
             total_debit = 0
             total_credit = 0
+            container_id = 0
+            container_manifaist = 0
 
             for invoice in invoices:
 
@@ -378,18 +398,35 @@ def customer_detail(request, customer_id):
                 else: 
                     transaction = 'noTransaction'
 
-                print("----------> transaction: ", transaction)
+                try:
+                    container_for_invoice = invoice.containers.get()
+                    print("Container ID:", container_for_invoice.id)
+
+                    container_id = container_for_invoice.id
+                    container_manifaist = container_manifaist.manifaist
+
+                except Container.DoesNotExist:
+                    print("No container found for the given invoice.")
+
+                except Container.MultipleObjectsReturned:
+                    print("Multiple containers found for the given invoice.")
+
+                # Assuming you have an invoice instance named 'invoice'
+
 
                 invoice_summary = {
                 'invoice_id': invoice.id,
                 'transaction': transaction,
                 'transaction_date': transaction.date if invoice.status != 'Unpaid' else datetime.min,
                 'status': invoice.status,
+                'container_id': container_id,
+                'container_manifaist': container_manifaist,
                 'customer_name': invoice.customer.name,
                 'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
                 'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
                 'total_price': items.aggregate(Sum('price'))['price__sum']
             }
+
 
                 
                 

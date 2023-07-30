@@ -117,6 +117,7 @@
                               <thead>
                               <tr>
                               <th>رقم الفاتورة</th>
+                              <th>معرف الحاوية</th>
                               <th class="right">عدد القطع</th>
                               <th class="center">المقاس</th>
                               <th class="right">الكلفة</th>
@@ -132,6 +133,7 @@
                               <tr>
                                   {% for invoice_summary in invoice_summaries %}
                                       <td class="left strong">{{ invoice_summary.invoice_id }}</td>
+                                      <td class="left strong">{{ invoice_summary.container_id }}</td>
                                       <td class="right">{{ invoice_summary.total_quantity }}</td>
                                       <td class="center">{{ invoice_summary.total_cbm }}</td>
                                       <td class="right">{{ invoice_summary.total_price }}</td>
@@ -174,6 +176,7 @@
                               
                               <tr>
                   
+                                  <td class="left strong"></td>
                                   <td class="left strong"></td>
                                   <td class="left strong"></td>
                                   <td class="left strong"></td>
