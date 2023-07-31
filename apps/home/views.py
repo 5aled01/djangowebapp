@@ -18,6 +18,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 #from django.views.decorators.csrf import csrf_protect
 import plotly.graph_objects as go
 import plotly.io as pio
+from prompt_toolkit import HTML
 from .forms import CustomerForm, ContainerForm
 
 import uuid
@@ -994,3 +995,31 @@ def generate_pdf(request):
         
     return HttpResponse('Errors')
 
+
+def generate_transaction_pdf(request):
+
+    if request.method == 'POST':
+        
+        transaction_id = request.POST.get('transaction_id')
+        # Retrieve the specific transaction based on the transaction_id
+        transaction = get_object_or_404(CustomerTransaction, id=transaction_id)
+
+        context = {
+            'transaction': transaction,
+            # Add any other relevant data to the context
+        }
+
+        # Load the new 'transaction.style.pdf.html' template
+        template = get_template('home/transaction.style.pdf.html')
+        html = template.render(context)
+
+        # Generate the PDF
+        pdf_file = BytesIO()
+        pisa.CreatePDF(BytesIO(html.encode('UTF-8')), dest=pdf_file)
+
+        # Set the response headers to trigger the download
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="transaction_{transaction.id}.pdf"'
+        response.write(pdf_file.getvalue())
+
+    return response
