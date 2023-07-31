@@ -20,6 +20,10 @@ urlpatterns = [
 
     path('delete_container', views.delete_container, name='delete_container'),
 
+    path('change_balance', views.change_balance, name='change_balance'),
+
+    
+
 
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
 
@@ -35,6 +39,8 @@ urlpatterns = [
     path('save_images', views.save_images, name='save_images'),
     path('get_invoice_images', views.get_invoice_images, name='get_invoice_images'),
     path('delete_invoice', views.delete_invoice, name='delete_invoice'),
+    path('cencel_transanction', views.cencel_transanction, name='cencel_transanction'),
+
 
     path('change_invoice_status', views.change_invoice_status, name='change_invoice_status'),
 

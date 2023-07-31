@@ -71,3 +71,19 @@ class Transaction(models.Model):
     rest = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))
     date = models.DateTimeField(default=timezone.now)
+
+
+
+class CustomerTransaction(models.Model):
+    id = models.CharField(primary_key=True, max_length=100, editable=False)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='customer_transactions')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    init = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))
+    date = models.DateTimeField(default=timezone.now)
+
+
+    def save(self, *args, **kwargs):
+        if not self.id or not self.pk:
+            self.id = 'CT' + str(uuid.uuid4().fields[-1])[:6]
+        super().save(*args, **kwargs)

@@ -31,7 +31,7 @@ from django.urls import reverse
 from django.db.models import Sum, Q
 import json
 from django.utils.crypto import get_random_string
-from .models import Customer, Container, InvoiceImage, Item, Invoice, Transaction
+from .models import Customer, Container, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
 
 
 
@@ -139,6 +139,14 @@ def pages(request):
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
 
+            context['customer_transaction'] = customer.customer_transactions.all()
+
+            print('=======-=======')
+
+            print(context['customer_transaction'])
+
+            print('=======-=======')
+
         
             invoices = customer.invoices.all()
             #print("------->",invoices)
@@ -168,8 +176,9 @@ def pages(request):
                     print("Container ID:", container_for_invoice.id)
 
                     container_id = container_for_invoice.id
-                    container_manifaist = container_for_invoice
-                    print("================")
+                    container_manifaist = container_for_invoice.manifaist
+                    
+                    #print("================: container_manifaist", container_manifaist)
                 except Container.DoesNotExist:
                     print("No container found for the given invoice.")
 
@@ -377,6 +386,14 @@ def customer_detail(request, customer_id):
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
 
+            context['customer_transaction'] = customer.customer_transactions.all()
+
+            print('=======-=======')
+
+            print(context['customer_transaction'])
+
+            print('=======-=======')
+
             invoices = customer.invoices.all()
             invoice_summaries = []
 
@@ -403,7 +420,7 @@ def customer_detail(request, customer_id):
                     print("Container ID:", container_for_invoice.id)
 
                     container_id = container_for_invoice.id
-                    container_manifaist = container_manifaist.manifaist
+                    container_manifaist = container_for_invoice.manifaist
 
                 except Container.DoesNotExist:
                     print("No container found for the given invoice.")
@@ -750,6 +767,75 @@ def delete_invoice(request):
         messages.error(request, 'Invalid request')
 
     return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
+
+
+def cencel_transanction(request):
+    if request.method == 'POST':
+
+        invoice_id = request.POST.get('invoice_id')
+        customer_id = request.POST.get('customer_id')
+
+        try:
+            invoice = Invoice.objects.get(id=invoice_id)
+            transaction = Transaction.objects.get(invoice=invoice)
+            invoice.status = 'Unpaid'
+            invoice.save()
+            transaction.delete()
+
+            messages.success(request, 'Transaction Cencel successfully')
+
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Transaction not found')
+    else:
+        messages.error(request, 'Transaction request')
+
+    return redirect('customer_detail', customer_id=customer_id)  # Replace 'invoices' with the appropriate URL name of the invoices page
+
+
+
+def change_balance(request):
+
+    if request.method == 'POST':
+
+        amount = float(request.POST.get('amount'))
+        option = request.POST.get('option')
+
+        
+
+
+        customer_id = request.POST.get('customer_id')
+        customer = Customer.objects.get(id=customer_id)
+
+        try:
+
+            customer = Customer.objects.get(id=customer_id)
+            
+            CustomerTransaction.objects.create(
+                customer=customer,
+                amount=amount,
+                init=customer.balance,
+                transaction_type=option,
+                date=timezone.now()
+            )
+
+            if option == 'credit':
+                customer.balance = float(customer.balance) + amount
+            else: 
+                 customer.balance = float(customer.balance) - amount
+
+            
+
+            customer.save()
+
+            messages.success(request, 'Nice Transaction')
+
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Transaction not found')
+    else:
+        messages.error(request, 'Transaction request')
+
+    return redirect('customer_detail', customer_id=customer_id)  # Replace 'invoices' with the appropriate URL name of the invoices page
+
 
 
 def change_invoice_status(request):

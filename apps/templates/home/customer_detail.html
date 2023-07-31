@@ -5,6 +5,64 @@
 {% block content %}
 
 
+ <!-- -------------------------- -->
+ <div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addCustomerModalLabel">Add new transactions</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      
+
+      <form action="{% url 'change_balance' %}" method="post" onsubmit="return validateForm()">
+      <div class="modal-body">
+        <!-- Add containers form goes here -->
+            {% csrf_token %}
+            <!-- ... previous code ... -->  
+            <div class="pl-lg-4">
+              <div class="row">
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-Option">Option</label>
+                    <select name="option" id="selectInput" class="form-control">
+                      <option value="credit">Credit</option>
+                      <option value="debit">Debit</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="col-lg-4">
+                  <div class="form-group">
+                    <label class="form-control-label" for="input-Phone">Amount</label>
+                    <input type="number" id="textInput" step="any" name="amount" class="form-control" placeholder="Amount..." required>
+                  </div>
+                </div>
+
+                <input type="hidden" name="customer_id" value="{{ customer.id }}">
+
+            </div>
+            </div>
+          <!-- Form fields for adding a new customer -->
+        
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to modify the balance?')">Confirme</button>
+        </div>
+      </div>
+  </form>
+  </div>
+  </div>
+
+  
+
+<!-- -------------------------- -->
+
+
 
 <div class="header pb-4 d-flex align-items-center" 
      style="min-height: 300px; background-image: url(/static/assets/img/theme/containers.jpg); background-size: cover; background-position: center top;">
@@ -23,6 +81,11 @@
         <h1 class="display-3 text-white"> 
           Balance {{ customer.balance }} AED
         </h1>
+
+      <a href="#" data-toggle="modal" data-target="#addCustomerModal">
+          <span class="btn btn-sm btn-secondary">Modify balance</i></span>
+      </a>
+
       </div>
       
     </div>
@@ -36,7 +99,7 @@
         <div class="card-body">
           {% if messages %}
              {% for message in messages %}
-                <div class="alert alert-success alert-dismissible d-flex align-items-center fade show" role="alert">
+                <div class="alert alert-info alert-dismissible" role="alert">
                   {{ message }}
                 </div>
              {% endfor %}
@@ -133,7 +196,7 @@
                               <tr>
                                   {% for invoice_summary in invoice_summaries %}
                                       <td class="left strong">{{ invoice_summary.invoice_id }}</td>
-                                      <td class="left strong">{{ invoice_summary.container_manifaist.manifaist }}</td>
+                                      <td class="left strong">{{ invoice_summary.container_manifaist }}</td>
                                       <td class="right">{{ invoice_summary.total_quantity }}</td>
                                       <td class="center">{{ invoice_summary.total_cbm }}</td>
                                       <td class="right">{{ invoice_summary.total_price }}</td>
@@ -172,7 +235,13 @@
                                         </div>
                                       </td>
                               </tr>
-                                  {% endfor %}
+
+                              {% empty %}
+                              <tr>
+                                <td colspan="5" class="text-center">No Invoice found.</td>
+                              </tr>
+
+                              {% endfor %}
                               
                               <tr>
                   
@@ -207,9 +276,82 @@
                               </div>
 
                                       </div>
-                                      </div>
+                        </div>
                                       
 
+
+                        <div class="card">
+                          <div class="card-body">
+                            
+                            
+                              <div class="card-header p-4">
+                              <div class="float-left"> <h3 class="mb-0">List of account balance transactions</h3>
+                              </div>
+                              
+                              </div>
+                              <div class="card-body">
+                              <div class="table-responsive-sm">
+                              <table class="table table-striped">
+                              <thead>
+                              <tr>
+                              <th>Transaction Type</th>
+                              <th>Date</th>
+                              <th>Account initial state</th>
+                              <th>Amount</th>
+                              <th class="center"></th>
+
+                              </tr>
+                              </thead>
+                              <tbody>
+                              <tr>
+                                  {% for transaction in customer_transaction %}
+                                      <td style="text-transform: capitalize;">{{ transaction.transaction_type }}</td>
+                                      <td>{{ transaction.date }}</td>                                     
+                                      {% if transaction.init < 0 %}
+                                        <td style="color: rgb(255, 59, 59);">{{ transaction.init }}</td>
+                                      {% else %}
+                                        <td class="right" style="color: rgb(86, 172, 0);">{{ transaction.init }}</td>
+                                      {% endif %}
+
+                                      <td>{{ transaction.amount }}</td>
+
+                                    
+                                      <td class="text-center">
+                                        <div class="dropdown">
+                                          <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                          </a>
+                                          <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                                            <a class="dropdown-item" href="#" >View Transaction (print)</a>
+                                          </div>
+                                        </div>
+                                      </td>
+                              </tr>
+
+                              {% empty %}
+                              <tr>
+                                <td colspan="5" class="text-center">No Transaction found.</td>
+                              </tr>
+
+                              {% endfor %}
+
+                              
+
+                              </tbody>
+                              </table>
+                              </div>
+                              <div class="row">
+                              <div class="col-lg-4 col-sm-5">
+                              </div>
+                              <div class="col-lg-4 col-sm-5 ml-auto">
+                              </div>
+                              </div>
+                              </div>
+                              <div class="card-footer bg-white">
+                              </div>
+
+                                      </div>
+                        </div>
 
 
                     </div>

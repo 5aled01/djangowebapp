@@ -111,8 +111,8 @@
                       <div class="form-group">
                         <label class="form-control-label" for="input-Option">Option</label>
                         <select name="option" id="selectInput" class="form-control">
-                          <option value="debit">Debit</option>
                           <option value="credit">Credit</option>
+                          <option value="debit">Debit</option>
                         </select>
 
 
@@ -135,9 +135,7 @@
                 <div class="row">
                   <div class="col-lg-14">
 
-                    Note: The account balance is <strong>{{ customer.balance }} </strong> and after crediting with <strong> {{ totalprice }} AED </strong>  will be: 
-                    
-
+                    Note: The account balance is <strong>{{ customer.balance }} </strong> and after debiting with <strong> {{ totalprice }} AED </strong>  will be: 
                     {% if new_balance < 0 %}
                     <strong>
                     <div style="color: rgb(201, 107, 107);;">
@@ -278,6 +276,16 @@
                     <a href="#" data-toggle="modal" data-target="#addCustomerModal">
                         <span class="btn btn-success me-1"><i class="fa fa-check-square" aria-hidden="true"></i></span>
                     </a>
+
+                  {% else %}
+
+                  <form action="{% url 'cencel_transanction' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+                    <input type="hidden" name="customer_id" value="{{ customer.id }}">
+
+                    <button type="submit" class="btn btn-info" onclick="return confirm('Are you sure you want to cencel transanction fro this this invoice?')"><i class="fa fa-window-close" aria-hidden="true"></i></button>
+                  </form>
                   
                   {% endif %}
                  
@@ -455,7 +463,7 @@
   // Function to update the state of the text input based on the selected option
   function updateTextInputState() {
     const selectedValue = selectInput.value;
-    if (selectedValue === "debit") {
+    if (selectedValue === "credit") {
       textInput.disabled = false; // Enable the text input
     } else {
       textInput.disabled = true;
