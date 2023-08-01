@@ -18,7 +18,6 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 #from django.views.decorators.csrf import csrf_protect
 import plotly.graph_objects as go
 import plotly.io as pio
-from prompt_toolkit import HTML
 from .forms import CustomerForm, ContainerForm
 
 import uuid
