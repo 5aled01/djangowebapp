@@ -84,14 +84,14 @@
 
                 <tr>
                   <th><span>Invoice #</span></th>
-                  <td><span>------</span></td>
+                  <td><span>{{ invoice.id }}</span></td>
                 </tr>
 
                 {% else %}
 
                 <tr>
                   <th><span>Invoice #</span></th>
-                  <td><span>{{ invoice.id }}</span></td>
+                  <td><span>----------</span></td>
                 </tr>
 
                 {% endif %}
@@ -367,8 +367,10 @@
       const cbmInput = row.querySelector(".cbm-input");
       const priceInput = row.querySelector(".price-input");
       const rateInput = row.querySelector(".rate-input");
-      const id_customer = row.querySelector(".customer-input");
-      const invoice_id = row.querySelector(".invoice_id-input");
+      //const id_customer = row.querySelector(".customer-input");
+      const id_customer = row.querySelector(".customer-input")?.value ?? row.querySelector(".rate-input");
+      //const invoice_id = row.querySelector(".invoice_id-input");
+      const invoice_id = row.querySelector(".invoice_id-input")?.value ?? row.querySelector(".rate-input");
 
       if (
         event.target === quantityInput ||
@@ -472,8 +474,10 @@
         const rateInput = row.querySelector(".rate-input");
         const priceInput = row.querySelector(".price-input");
         const customerInput = document.querySelector(".customer-input");
-        const invoice_inrInput = document.querySelector(".invoice_in-input");
-        const invoice_idrInput = document.getElementById("invoice_id");
+        //const invoice_inrInput = document.querySelector(".invoice_in-input");
+        const invoice_inrInput = document.querySelector(".invoice_in-input") ?? document.querySelector(".customer-input");
+        //const invoice_idrInput = document.getElementById("invoice_id");
+        const invoice_idrInput = document.querySelector(".invoice_id-input") ?? document.querySelector(".customer-input");
 
         const item = {
           item: descriptionInput.value.trim(),

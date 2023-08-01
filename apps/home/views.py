@@ -140,6 +140,8 @@ def pages(request):
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
 
+            context['invoice_in'] = 'invoice_out'
+
             context['customer_transaction'] = customer.customer_transactions.all()
 
             print('=======-=======')
@@ -676,15 +678,16 @@ def Invoice_save(request):
         customer = None
         items = []
 
+        print("<><><><><======><><><><>")
         customer = Customer.objects.get(id=invoice_items[0]["id_customer"])
 
         if invoice_items[0]["invoice_in"] == 'invoice_in':
 
-            print("invoice id ======><><><><>", invoice_items[0])
+            #print("invoice id ======><><><><>", invoice_items[0])
 
             invoice = Invoice.objects.get(id = invoice_items[0]["invoice_id"])
-            items_for_invoice = invoice.items.get()
-            items_for_invoice.delete()
+            items_for_invoice = invoice.items.all()
+            items_for_invoice.delete()  
         
         else:
 
@@ -718,7 +721,7 @@ def Invoice_save(request):
         if invoice_items[0]["invoice_in"] != 'invoice_in':
             container, create = Container.objects.get_or_create(manifaist=item["manifest"])
 
-            print('----------->',container)
+            #print('----------->',container)
             container.invoice.add(invoice)
             container.save()
 
@@ -741,6 +744,7 @@ def Invoice_save(request):
 
         if invoice_items[0]["invoice_in"] == 'invoice_in':
             messages.success(request, "invoice edited successfully.")
+            invoice_items[0]["invoice_in"] = 'invoice_out'
         else:
             messages.success(request, "invoice saved successfully.")
 
