@@ -325,8 +325,12 @@
                                             <i class="fas fa-ellipsis-v"></i>
                                           </a>
                                           <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
-                                            <a class="dropdown-item" href="#" >View Transaction (print)</a>
-                                          </div>
+                                            <form action="{% url 'generate_transaction_pdf' %}" method="post" >
+                                              {% csrf_token %}
+                                              <button class="dropdown-item" type="submit">View Transaction (print)</button>
+                                              <input type="hidden" value="{{ transaction.id }}" name="transaction_id"/>
+                                            </form>
+                                            </div>
                                         </div>
                                       </td>
                               </tr>
@@ -392,5 +396,7 @@
                             button.form.submit();
                           }, 2000); // Change the delay time (in milliseconds) as per your preference
                         }
+                        
+</script>
                     </script>
                     {% endblock javascripts %}
