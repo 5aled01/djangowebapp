@@ -40,9 +40,18 @@
     <div class="row">
       <div class="col-lg-10 col-md-10">
         <h1 class="display-2 text-white">
-          <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
-          Add invoice for the customer {{ customer.name }}
+
+        {% if invoice_in == 'invoice_in' %}
+
+        <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
+          Edit invoice for the customer {{ customer.name }}
         </a>
+
+        {% else %}
+          <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
+            Add invoice for the customer {{ customer.name }}
+          </a>
+          {% endif %}
         </h1>
       </div>
     </div>
@@ -67,10 +76,25 @@
                 </p>
               </address>
               <table class="meta">
+
+                {% if invoice_in == 'invoice_in' %}
+
+                <input type="hidden" name="invoice_in" class="invoice_in-input" value="{{ invoice_in }}">
+                <input type="hidden" name="invoice_id" id="invoice_id" class="invoice_id-input" value="{{ invoice_id }}">
+
                 <tr>
                   <th><span>Invoice #</span></th>
                   <td><span>------</span></td>
                 </tr>
+
+                {% else %}
+
+                <tr>
+                  <th><span>Invoice #</span></th>
+                  <td><span>{{ invoice.id }}</span></td>
+                </tr>
+
+                {% endif %}
                 <tr>
                   <th><span>Date</span></th>
                   <td><span id="date"></span></td>
@@ -82,12 +106,27 @@
                       {% endif %}  
                   <th><span>Manifest #</span></th>
                   <td>
+
+                    {% if invoice_in == 'invoice_in' %}
+
+                    <input
+                      type="text"
+                      class="manifest-input"
+                      id="manifest"
+                      value="{{ manifest_id }}"
+                      required
+                    />
+
+                    {% else %}
                     <input
                       type="text"
                       class="manifest-input"
                       id="manifest"
                       required
                     />
+
+                    {% endif %}
+
                   </td>
                 </tr>
                 <tr>
@@ -126,6 +165,44 @@
                 </thead>
 
                 <tbody id="item-list">
+
+                  {% if invoice_in == 'invoice_in' %}
+
+                    {% for item in items %}
+
+                    <tr class="default-row">
+                      <td>
+                        <a class="cut">-</a
+                        ><input type="text" class="Description-input" value="{{ item.item }}" required />
+                      </td>
+  
+                      <td>
+                        <input type="text" class="source-input" value="{{ item.source }}" required />
+                      </td>
+  
+                      <td>
+                        <input type="number" class="quantity-input" value="{{ item.quantity }}" required />
+                      </td>
+                      <td>
+                        <input type="number" class="length-input" value="{{ item.length }}" required />
+                      </td>
+                      <td>
+                        <input type="number" class="width-input" value="{{ item.width }}" required />
+                      </td>
+                      <td>
+                        <input type="number" class="height-input" value="{{ item.height }}" required />
+                      </td>
+                      <td class="cbm-input">{{ item.CBM }}</td>
+                      <td>
+                        <input type="number" class="rate-input"  value="650" required />
+                      </td>
+                      <td class="price-input"  >{{ item.price }}</td>
+                    </tr>
+  
+                    {% endfor %}
+
+                  {% else %}
+
                   <tr class="default-row">
                     <td>
                       <a class="cut">-</a
@@ -154,6 +231,9 @@
                     </td>
                     <td class="price-input"></td>
                   </tr>
+
+                  {% endif %}
+
                 </tbody>
               </table>
 
@@ -277,6 +357,8 @@
       const quantityInput = row.querySelector(".quantity-input");
 
       const manifestInput = document.getElementById("manifest");
+      const costInput = document.getElementById("invoice_id");
+
       const augInput = document.getElementById("aug");
 
       const lengthInput = row.querySelector(".length-input");
@@ -286,6 +368,7 @@
       const priceInput = row.querySelector(".price-input");
       const rateInput = row.querySelector(".rate-input");
       const id_customer = row.querySelector(".customer-input");
+      const invoice_id = row.querySelector(".invoice_id-input");
 
       if (
         event.target === quantityInput ||
@@ -389,6 +472,8 @@
         const rateInput = row.querySelector(".rate-input");
         const priceInput = row.querySelector(".price-input");
         const customerInput = document.querySelector(".customer-input");
+        const invoice_inrInput = document.querySelector(".invoice_in-input");
+        const invoice_idrInput = document.getElementById("invoice_id");
 
         const item = {
           item: descriptionInput.value.trim(),
@@ -402,6 +487,9 @@
           price: parseFloat(priceInput.textContent) || 0,
           manifest: manifestInput.value || 0,
           id_customer: customerInput.value.trim(),
+          invoice_in: invoice_inrInput.value.trim(),
+          invoice_id: invoice_idrInput.value,
+
         };
 
         invoiceData.push(item);

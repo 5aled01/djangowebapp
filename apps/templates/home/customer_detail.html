@@ -144,7 +144,7 @@
             <div class="col-12 text-right">
               <div class="row">
                 <div class="col-md-10 ">
-                  <button type="submit" class="btn btn-sm btn-primary " onclick="showLoadingSpinner(this)">Edit customer</button> 
+                  <button type="submit" class="btn btn-sm btn-primary" onclick="showLoadingSpinner(this)">Edit customer</button> 
               </div>
           </form>
                 <div class=" mt-md-0 text-md-right">
@@ -164,7 +164,8 @@
                             
                               <div class="card-header p-4">
                               <div class="float-left"> <h3 class="mb-0">List of invoices </h3>
-                              ------- </div>
+                                <a href="/invoices_detail.html?customer_id={{ customer.id }}">+</a>
+                              </div>
                               
                               </div>
                               <div class="card-body">
@@ -231,6 +232,7 @@
                                           </a>
                                           <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
                                             <a class="dropdown-item" href="/invoice_view.html?invoice_id={{ invoice_summary.invoice_id }}" >View Invoice</a>
+                                            <a class="dropdown-item" href="/invoices_detail.html?customer_id={{ customer.id }}&&invoice_id={{ invoice_summary.invoice_id }}">Edit Invoice</a>
                                           </div>
                                         </div>
                                       </td>
@@ -238,7 +240,7 @@
 
                               {% empty %}
                               <tr>
-                                <td colspan="5" class="text-center">No Invoice found.</td>
+                                <td colspan="9" class="text-center">No Invoice found.</td>
                               </tr>
 
                               {% endfor %}
@@ -285,7 +287,8 @@
                             
                             
                               <div class="card-header p-4">
-                              <div class="float-left"> <h3 class="mb-0">List of account balance transactions</h3>
+                              <div class="float-left"> <h3 class="mb-0">List of account balance transactions</h3> 
+
                               </div>
                               
                               </div>

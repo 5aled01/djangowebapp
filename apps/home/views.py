@@ -344,9 +344,25 @@ def pages(request):
 
         if load_template == 'invoices_detail.html':
                 customer_id = request.GET.get('customer_id')
+                invoice_id = request.GET.get('invoice_id')
+
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
-        
+
+                if invoice_id != None:
+                    invoice = get_object_or_404(Invoice, id=invoice_id)
+                    items = invoice.items.all()
+
+                    context['invoice'] = invoice
+                    context['items'] = items
+
+                    container_for_invoice = invoice.containers.get()
+                    context['manifest_id'] = container_for_invoice.manifaist
+
+
+                    context['invoice_in'] = 'invoice_in'
+                    context['invoice_id'] = invoice_id
+
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
 
@@ -661,8 +677,19 @@ def Invoice_save(request):
         items = []
 
         customer = Customer.objects.get(id=invoice_items[0]["id_customer"])
-        invoice = Invoice(customer=customer)
-        invoice.save()  # Save the invoice to obtain the ID
+
+        if invoice_items[0]["invoice_in"] == 'invoice_in':
+
+            print("invoice id ======><><><><>", invoice_items[0])
+
+            invoice = Invoice.objects.get(id = invoice_items[0]["invoice_id"])
+            items_for_invoice = invoice.items.get()
+            items_for_invoice.delete()
+        
+        else:
+
+            invoice = Invoice(customer=customer)
+            invoice.save()  # Save the invoice to obtain the ID
         
         for item in invoice_items:
             
@@ -687,10 +714,13 @@ def Invoice_save(request):
             totalpack += item["quantity"]
 
         #add create message
-        container, create = Container.objects.get_or_create(manifaist=item["manifest"])
-        print('----------->',container)
-        container.invoice.add(invoice)
-        container.save()
+
+        if invoice_items[0]["invoice_in"] != 'invoice_in':
+            container, create = Container.objects.get_or_create(manifaist=item["manifest"])
+
+            print('----------->',container)
+            container.invoice.add(invoice)
+            container.save()
 
 
             #print('not goood------')
@@ -709,11 +739,15 @@ def Invoice_save(request):
         context['invoice'] = invoice
         context['items'] = items
 
-        messages.success(request, "invoice saved successfully.")
+        if invoice_items[0]["invoice_in"] == 'invoice_in':
+            messages.success(request, "invoice edited successfully.")
+        else:
+            messages.success(request, "invoice saved successfully.")
 
         load_template = 'final_invoice.html'
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
+
     else:
         return JsonResponse({"error": "Invalid request method"})
 
