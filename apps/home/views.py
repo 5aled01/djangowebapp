@@ -136,6 +136,7 @@ def pages(request):
             context['customers'] = page_obj
 
         if load_template == 'customer_detail.html':
+
             customer_id = request.GET.get('customer_id')
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
@@ -214,9 +215,10 @@ def pages(request):
                 total_cbm += invoice_summary['total_cbm'] or 0
                 total_price += invoice_summary['total_price'] or 0
             
+            invoice_summaries = sorted(invoice_summaries, key=lambda x: x['container_manifaist'])
 
             #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
-
+        
             context['invoice_summaries'] = invoice_summaries
             context['total_debit'] = total_debit
             context['total_credit'] = total_credit
@@ -444,11 +446,8 @@ def customer_detail(request, customer_id):
                 'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
                 'total_price': items.aggregate(Sum('price'))['price__sum']
             }
-
-
-                
-                
-
+            
+                                          
                 # Calculate and add the quantities, CBM, and price for each item
                 invoice_summaries.append(invoice_summary)
 
@@ -464,6 +463,7 @@ def customer_detail(request, customer_id):
             
 
             #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
+            invoice_summaries = sorted(invoice_summaries, key=lambda x: x['container_manifaist'])
 
             context['invoice_summaries'] = invoice_summaries
             context['total_debit'] = total_debit
