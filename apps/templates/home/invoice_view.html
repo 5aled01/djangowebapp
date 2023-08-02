@@ -179,6 +179,9 @@
               <div class="col-sm-6">
                 <div class="text-muted">
                   <h5 class="font-size-15 mb-3">Billed To:</h5>
+                  <a href="/customer_detail.html?customer_id={{ customer.id }}">
+                    <i class="fa fa-address-book"></i>
+                  </a> 
                   <h5 class="font-size-15 mb-2">{{ customer.name }}</h5>
                   <p>Phone: {{ customer.phone_number }}</p>
                 </div>
@@ -317,10 +320,20 @@
                   
                   <button id="add-image-btn" class="btn btn-primary me-1">
                     <i class="fa fa-plus"></i> Import Image
+
+                    
+
                   </button>
+
+                  
                   
                   <button id="save-images-btn" class="btn btn-primary" disabled>
                     Save Images
+
+                    <div id="loading-spinner" class="d-none">
+                      <i class="fas fa-circle-notch fa-spin"></i>
+                    </div>
+                    
                   </button>
                 </div>
               </div>
@@ -367,9 +380,16 @@
       });
     }
     saveImagesBtn.disabled = selectedFiles.length === 0;
+
+
   });
 
     saveImagesBtn.addEventListener('click', () => {
+
+      saveImagesBtn.disabled = true;
+
+      $("#loading-spinner").removeClass("d-none");
+
       const formData = new FormData();
       formData.append('invoice_id', invoiceId);
 
@@ -393,6 +413,9 @@
             savedCount++; // Increment the savedCount variable
             if (savedCount === selectedFiles.length) {
               console.log('All images saved successfully');
+              saveImagesBtn.disabled = true;
+              $("#loading-spinner").addClass("d-none");
+
               displayInvoiceImages(); // Call the function to display the saved images
               showSuccessMessage();
             }
