@@ -182,8 +182,8 @@
                               <tr>
                               <th>رقم الفاتورة</th>
                               <th>معرف الحاوية</th>
-                              <th class="right">عدد القطع</th>
-                              <th class="center">المقاس</th>
+                              <th>عدد القطع</th>
+                              <th>المقاس</th>
                               <th class="right">الكلفة</th>
                               <th class="right">حالة الفاتورة</th>
                               <th class="right">Debit</th>
@@ -196,10 +196,10 @@
                               <tbody>
                               <tr>
                                   {% for invoice_summary in invoice_summaries %}
-                                      <td class="left strong">{{ invoice_summary.invoice_id }}</td>
-                                      <td class="left strong">{{ invoice_summary.container_manifaist }}</td>
-                                      <td class="right">{{ invoice_summary.total_quantity }}</td>
-                                      <td class="center">{{ invoice_summary.total_cbm }}</td>
+                                      <td>{{ invoice_summary.invoice_id }}</td>
+                                      <td>{{ invoice_summary.container_manifaist }}</td>
+                                      <td>{{ invoice_summary.total_quantity }}</td>
+                                      <td>{{ invoice_summary.total_cbm }}</td>
                                       <td class="right">{{ invoice_summary.total_price }}</td>
                                       {% if invoice_summary.status == 'Unpaid' %}
                                         <td class="right" style="color: rgb(255, 59, 59);">{{ invoice_summary.status }}</td>
