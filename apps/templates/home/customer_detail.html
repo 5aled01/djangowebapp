@@ -330,6 +330,10 @@
                                               <button class="dropdown-item" type="submit">View Transaction (print)</button>
                                               <input type="hidden" value="{{ transaction.id }}" name="transaction_id"/>
                                             </form>
+                                            <form action="{% url 'cancel_transanction_balance' %}" method="post">
+                                              {% csrf_token %}
+                                              <button type="submit" class="dropdown-item" name="transaction_id" value="{{ transaction.id }}">Cancel Transaction</button>
+                                            </form>
                                             </div>
                                         </div>
                                       </td>

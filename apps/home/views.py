@@ -1060,3 +1060,45 @@ def generate_transaction_pdf(request):
         response.write(pdf_file.getvalue())
 
     return response
+'''
+def cancel_transanction_balance(request):
+    if request.method == 'POST':
+        transaction_id = request.POST.get('transaction_id')
+        # Retrieve the specific transaction based on the transaction_id
+        transaction = get_object_or_404(CustomerTransaction, id=transaction_id)
+
+        # Perform the deletion of the transaction
+        transaction.delete()
+
+        # Add a success message
+        messages.success(request, 'Transaction deleted successfully.')
+
+    return redirect('customer_detail', customer_id=transaction.customer_id)
+'''
+from decimal import Decimal
+
+def cancel_transanction_balance(request):
+    if request.method == 'POST':
+        transaction_id = request.POST.get('transaction_id')
+        # Retrieve the specific transaction based on the transaction_id
+        transaction = get_object_or_404(CustomerTransaction, id=transaction_id)
+
+        # Check the transaction type
+        if transaction.transaction_type == 'debit':
+            # If it's a debit transaction, add the amount to the customer's balance
+            customer = Customer.objects.get(id=transaction.customer_id)
+            customer.balance += Decimal(str(transaction.amount))
+            customer.save()
+        elif transaction.transaction_type == 'credit':
+            # If it's a credit transaction, subtract the amount from the customer's balance
+            customer = Customer.objects.get(id=transaction.customer_id)
+            customer.balance -= Decimal(str(transaction.amount))
+            customer.save()
+
+        # Perform the deletion of the transaction
+        transaction.delete()
+
+        # Add a success message
+        messages.success(request, 'Transaction deleted successfully.')
+
+    return redirect('customer_detail', customer_id=transaction.customer_id)
