@@ -135,6 +135,7 @@ def pages(request):
             context['customers'] = page_obj
 
         if load_template == 'customer_detail.html':
+            request.session['delete_invoice_from_page'] = 'customer_detail'
 
             customer_id = request.GET.get('customer_id')
             customer = get_object_or_404(Customer, id=customer_id)
@@ -305,6 +306,7 @@ def pages(request):
 
         if load_template == 'invoices.html':
                 search_query = request.GET.get('search', '')
+                request.session['delete_invoice_from_page'] = 'invoices'
 
                 invoices = Invoice.objects.annotate(total_price=Sum('items__price')).values('id', 'customer_id', 'total_price', 'date').order_by('-date')
 
@@ -796,16 +798,26 @@ def delete_invoice(request):
         invoice_id = request.POST.get('invoice_id')
         try:
             invoice = Invoice.objects.get(id=invoice_id)
+            # Store the customer ID before deleting the invoice
+            customer_id = invoice.customer.id
             invoice.delete()
             messages.success(request, 'Invoice deleted successfully')
+
+            # Check the session variable to determine the source of the request
+            from_page = request.session.get('delete_invoice_from_page')
+            if from_page == 'customer_detail':
+                # Redirect to the customer_detail page with the appropriate customer_id
+                return redirect('customer_detail', customer_id=customer_id)
+            else:
+                return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
         except Invoice.DoesNotExist:
             messages.error(request, 'Invoice not found')
     else:
         messages.error(request, 'Invalid request')
 
-    return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
-
+    # Redirect to the customer details page if any error occurs or if the request is invalid
+    return redirect('customer_detail', customer_id=customer_id)
 
 def cencel_transanction(request):
     if request.method == 'POST':
@@ -1060,21 +1072,7 @@ def generate_transaction_pdf(request):
         response.write(pdf_file.getvalue())
 
     return response
-'''
-def cancel_transanction_balance(request):
-    if request.method == 'POST':
-        transaction_id = request.POST.get('transaction_id')
-        # Retrieve the specific transaction based on the transaction_id
-        transaction = get_object_or_404(CustomerTransaction, id=transaction_id)
 
-        # Perform the deletion of the transaction
-        transaction.delete()
-
-        # Add a success message
-        messages.success(request, 'Transaction deleted successfully.')
-
-    return redirect('customer_detail', customer_id=transaction.customer_id)
-'''
 from decimal import Decimal
 
 def cancel_transanction_balance(request):
