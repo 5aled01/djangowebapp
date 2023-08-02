@@ -40,6 +40,8 @@ urlpatterns = [
     path('get_invoice_images', views.get_invoice_images, name='get_invoice_images'),
     path('delete_invoice', views.delete_invoice, name='delete_invoice'),
     path('cencel_transanction', views.cencel_transanction, name='cencel_transanction'),
+    path('cancel_transanction_balance', views.cancel_transanction_balance, name='cancel_transanction_balance'),
+
     path('generate_transaction_pdf', views.generate_transaction_pdf, name='generate_transaction_pdf'),
 
     path('change_invoice_status', views.change_invoice_status, name='change_invoice_status'),
