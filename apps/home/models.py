@@ -43,6 +43,28 @@ class Invoice(models.Model):
             self.id = 'INVO' + str(uuid.uuid4().fields[-1])[:6]
         super().save(*args, **kwargs)
 
+
+class FreeInvoice(models.Model):
+    id = models.CharField(primary_key=True, max_length=100, editable=False)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='freeinvoices')
+    date = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=100, default='Unpaid')
+
+    def save(self, *args, **kwargs):
+        if not self.id or not self.pk:
+            self.id = 'FRINVO' + str(uuid.uuid4().fields[-1])[:6]
+        super().save(*args, **kwargs)
+
+
+class FreeItem(models.Model):
+    invoice = models.ForeignKey(FreeInvoice, on_delete=models.CASCADE, related_name='freeitems')
+    item = models.CharField(max_length=100)
+    quantity = models.IntegerField()
+    rate = models.DecimalField(max_digits=10, decimal_places=2)
+    price = models.DecimalField(max_digits=10, decimal_places=2) 
+    created_date = models.DateTimeField(default=timezone.now)
+
+
 class Item(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='items')
     item = models.CharField(max_length=100)
@@ -67,6 +89,13 @@ class InvoiceImage(models.Model):
 
 class Transaction(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='transactions')
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    rest = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))
+    date = models.DateTimeField(default=timezone.now)
+
+class FreeTransaction(models.Model):
+    invoice = models.ForeignKey(FreeInvoice, on_delete=models.CASCADE, related_name='freetransactions')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     rest = models.DecimalField(max_digits=10, decimal_places=2)
     transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))

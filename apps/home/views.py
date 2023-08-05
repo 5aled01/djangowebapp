@@ -31,7 +31,7 @@ from django.urls import reverse
 from django.db.models import Sum, Q
 import json
 from django.utils.crypto import get_random_string
-from .models import Customer, Container, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
+from .models import Customer, Container, FreeInvoice, FreeItem, FreeTransaction, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
 
 
 
@@ -105,14 +105,13 @@ def index(request):
     return render(request, 'home/index.html', context)
 
 
+
 @login_required(login_url="/login/")
 def pages(request):
     # All resource paths end in .html.
     # Pick out the html file name from the url. And load that template.
-
-
     try:
-
+        
         load_template = request.path.split('/')[-1]
         if load_template == 'admin':
             return HttpResponseRedirect(reverse('admin:index'))
@@ -135,12 +134,18 @@ def pages(request):
             context['customers'] = page_obj
 
         if load_template == 'customer_detail.html':
+            
+            try:
+                customer_id = request.GET.get('customer_id')
+                customer = get_object_or_404(Customer, id=customer_id)
+            except:
+                customer_id = context['customer_id']
+                customer = get_object_or_404(Customer, id=customer_id)
 
-            customer_id = request.GET.get('customer_id')
-            customer = get_object_or_404(Customer, id=customer_id)
+            #customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
 
-            context['invoice_in'] = 'invoice_out'
+            print('customer', customer)
 
             context['customer_transaction'] = customer.customer_transactions.all()
 
@@ -150,29 +155,74 @@ def pages(request):
 
             print('=======-=======')
 
-        
             invoices = customer.invoices.all()
-            #print("------->",invoices)
-
+            freeinvoices = customer.freeinvoices.all()
             invoice_summaries = []
+            free_invoice_summaries = []
 
             total_quantity = 0
+            free_total_quantity = 0
             total_cbm = 0
-            total_price = 0
-            total_debit = 0
+            total_price  = 0
+            free_total_price = 0
+            total_debit = 0 
+            free_total_debit = 0
             total_credit = 0
+            free_total_credit = 0
             container_id = 0
             container_manifaist = 0
+            free_total_rate = 0
+
+            for freeinvoice in freeinvoices:
+
+
+                # Get all items related to the invoice
+                #items = invoice.items.all()
+                #print('items =======-======= ', items)
+
+                freeitems = freeinvoice.freeitems.all()
+
+                print('freeitems', freeitems)
+
+                if freeinvoice.status != 'Unpaid':
+                    freetransaction = get_object_or_404(FreeTransaction, invoice=freeinvoice)
+                else: 
+                    freetransaction = 'noTransaction'
+                
+                free_invoice_summarie = {
+                'invoice_id': freeinvoice.id,
+                'transaction': freetransaction,
+                'transaction_date': freetransaction.date if freeinvoice.status != 'Unpaid' else datetime.min,
+                'status': freeinvoice.status,
+                'customer_name': freeinvoice.customer.name,
+                'total_quantity': freeitems.aggregate(Sum('quantity'))['quantity__sum'],
+                'total_rate': freeitems.aggregate(Sum('rate'))['rate__sum'],
+                'total_price': freeitems.aggregate(Sum('price'))['price__sum']
+            }
+                
+
+                if freeinvoice.status == 'Paid':
+                    if freetransaction.transaction_type == 'debit': 
+                        free_total_debit += freetransaction.amount or 0
+                    else:
+                        free_total_credit += freetransaction.amount or 0
+
+
+                free_total_quantity += free_invoice_summarie['total_quantity'] or 0
+                free_total_rate += free_invoice_summarie['total_rate'] or 0
+                free_total_price += free_invoice_summarie['total_price'] or 0
+                free_invoice_summaries.append(free_invoice_summarie)
 
             for invoice in invoices:
+
                 # Get all items related to the invoice
                 items = invoice.items.all()
+
 
                 if invoice.status != 'Unpaid':
                     transaction = get_object_or_404(Transaction, invoice=invoice)
                 else: 
                     transaction = 'noTransaction'
-
 
                 try:
                     container_for_invoice = invoice.containers.get()
@@ -180,8 +230,7 @@ def pages(request):
 
                     container_id = container_for_invoice.id
                     container_manifaist = container_for_invoice.manifaist
-                    
-                    #print("================: container_manifaist", container_manifaist)
+
                 except Container.DoesNotExist:
                     print("No container found for the given invoice.")
 
@@ -189,6 +238,7 @@ def pages(request):
                     print("Multiple containers found for the given invoice.")
 
                 # Assuming you have an invoice instance named 'invoice'
+
 
                 invoice_summary = {
                 'invoice_id': invoice.id,
@@ -202,36 +252,66 @@ def pages(request):
                 'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
                 'total_price': items.aggregate(Sum('price'))['price__sum']
             }
-
+                
                 # Calculate and add the quantities, CBM, and price for each item
-                invoice_summaries.append(invoice_summary)
 
                 if invoice.status == 'Paid':
                     if transaction.transaction_type == 'debit': 
                         total_debit += transaction.amount or 0
                     else:
                         total_credit += transaction.amount or 0
+                print('ok')        
 
                 total_quantity += invoice_summary['total_quantity'] or 0
                 total_cbm += invoice_summary['total_cbm'] or 0
                 total_price += invoice_summary['total_price'] or 0
-            
-            invoice_summaries = sorted(invoice_summaries, key=lambda x: x['container_manifaist'])
+                invoice_summaries.append(invoice_summary)
+
+
 
             #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
-        
+            invoice_summaries = sorted(invoice_summaries, key=lambda x: x['container_manifaist'])
+
             context['invoice_summaries'] = invoice_summaries
+            context['free_invoice_summaries'] = free_invoice_summaries
+
             context['total_debit'] = total_debit
             context['total_credit'] = total_credit
             context['total_quantity'] = total_quantity
             context['total_cbm'] = total_cbm
             context['total_price'] = total_price
-        
+
+            context['free_total_debit'] = free_total_debit
+            context['free_total_credit'] = free_total_credit
+            context['free_total_quantity'] = free_total_quantity
+            context['free_total_cbm'] = free_total_rate
+            context['free_total_price'] = free_total_price
+
+        if request.path == '/free_invoice/invoice_view.html':
+            invoice_id = request.GET.get('invoice_id')
+            invoice = get_object_or_404(FreeInvoice, id=invoice_id)
+
+            #invoice_summaries = []
+            
+            load_template = '/free_invoice/invoice_view.html'
+
+            total_quantity = 0
+            total_price = 0
+            # Get all items related to the invoice
+            items = invoice.freeitems.all()
+
+            #context['invoice_summaries'] = invoice_summaries
+            context['invoice'] = invoice
+            context['customer'] = invoice.customer
+            context['items'] = items 
+            context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
+            context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
+
         if load_template == 'invoice_view.html':
             invoice_id = request.GET.get('invoice_id')
             invoice = get_object_or_404(Invoice, id=invoice_id)
 
-            invoice_summaries = []
+            #invoice_summaries = []
 
             total_quantity = 0
             total_cbm = 0
@@ -240,7 +320,7 @@ def pages(request):
             # Get all items related to the invoice
             items = invoice.items.all()
          
-            context['invoice_summaries'] = invoice_summaries
+            #context['invoice_summaries'] = invoice_summaries
             context['invoice'] = invoice
             context['customer'] = invoice.customer
             context['items'] = items 
@@ -345,11 +425,35 @@ def pages(request):
                 context['invoices'] = page_obj
                 context['search_query'] = search_query
 
+        if request.path == '/free_invoice/invoices_detail.html':
+                customer_id = request.GET.get('customer_id')
+                invoice_id = request.GET.get('invoice_id')
+                customer = get_object_or_404(Customer, id=customer_id)
+                context['customer'] = customer
+
+                load_template = '/free_invoice/invoices_detail.html'
+
+                print('----////', load_template)
+
+                if invoice_id != None:
+                    invoice = get_object_or_404(FreeInvoice, id=invoice_id)
+                    items = invoice.freeitems.all()
+
+                    context['invoice'] = invoice
+                    context['items'] = items
+
+                    #container_for_invoice = invoice.containers.get()
+                    #context['manifest_id'] = container_for_invoice.manifaist
+
+
+                    context['invoice_in'] = 'invoice_in'
+                    context['invoice_id'] = invoice_id
+                else:
+                     context['invoice_in'] = ''
 
         if load_template == 'invoices_detail.html':
                 customer_id = request.GET.get('customer_id')
                 invoice_id = request.GET.get('invoice_id')
-
                 customer = get_object_or_404(Customer, id=customer_id)
                 context['customer'] = customer
 
@@ -366,6 +470,9 @@ def pages(request):
 
                     context['invoice_in'] = 'invoice_in'
                     context['invoice_id'] = invoice_id
+
+                else:
+                     context['invoice_in'] = ''
 
         html_template = loader.get_template('home/' + load_template)
         return HttpResponse(html_template.render(context, request))
@@ -391,44 +498,91 @@ def edit_customer(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Customer updated successfully.")
-            return redirect('customer_detail', customer_id=customer.id)
+            context['customer_id'] = customer.id
+            return redirect('home/customer_detail.html', customer_id=customer.id)
     else:
         form = CustomerForm(instance=customer)
 
-    context = {'customer_id': customer_id}
+    context['customer_id'] = customer.id
     return redirect(request, 'home/customer_detail.html', context)
 
 
 @login_required(login_url="/login/")
 def customer_detail(request, customer_id):
-            context = {}
-
+            
+            #context = {}
+            customer_id = request.GET.get('customer_id')
             customer = get_object_or_404(Customer, id=customer_id)
             context['customer'] = customer
 
             context['customer_transaction'] = customer.customer_transactions.all()
 
-            print('=======-=======')
-
-            print(context['customer_transaction'])
-
-            print('=======-=======')
+            print('222222')
 
             invoices = customer.invoices.all()
+
+            freeinvoices = customer.freeinvoices.all()
             invoice_summaries = []
+            free_invoice_summaries = []
 
             total_quantity = 0
+            free_total_quantity = 0
             total_cbm = 0
-            total_price = 0
-            total_debit = 0
+            total_price  = 0
+            free_total_price = 0
+            total_debit = 0 
+            free_total_debit = 0
             total_credit = 0
+            free_total_credit = 0
             container_id = 0
             container_manifaist = 0
+            free_total_rate = 0
+
+            for freeinvoice in freeinvoices:
+
+
+                # Get all items related to the invoice
+                #items = invoice.items.all()
+                #print('items =======-======= ', items)
+
+                freeitems = freeinvoice.freeitems.all()
+
+                print('freeitems', freeitems)
+
+                if freeinvoice.status != 'Unpaid':
+                    freetransaction = get_object_or_404(Transaction, invoice=freeinvoice)
+                else: 
+                    freetransaction = 'noTransaction'
+                
+                free_invoice_summarie = {
+                'invoice_id': freeinvoice.id,
+                'transaction': freetransaction,
+                'transaction_date': freetransaction.date if freeinvoice.status != 'Unpaid' else datetime.min,
+                'status': freeinvoice.status,
+                'customer_name': freeinvoice.customer.name,
+                'total_quantity': freeitems.aggregate(Sum('quantity'))['quantity__sum'],
+                'total_rate': freeitems.aggregate(Sum('rate'))['rate__sum'],
+                'total_price': freeitems.aggregate(Sum('price'))['price__sum']
+            }
+                
+
+                if freeinvoice.status == 'Paid':
+                    if freetransaction.transaction_type == 'debit': 
+                        free_total_debit += freetransaction.amount or 0
+                    else:
+                        free_total_credit += freetransaction.amount or 0
+
+
+                free_total_quantity += free_invoice_summarie['total_quantity'] or 0
+                free_total_rate += free_invoice_summarie['total_rate'] or 0
+                free_total_price += free_invoice_summarie['total_price'] or 0
+                free_invoice_summaries.append(free_invoice_summarie)
 
             for invoice in invoices:
 
                 # Get all items related to the invoice
                 items = invoice.items.all()
+
 
                 if invoice.status != 'Unpaid':
                     transaction = get_object_or_404(Transaction, invoice=invoice)
@@ -463,34 +617,46 @@ def customer_detail(request, customer_id):
                 'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
                 'total_price': items.aggregate(Sum('price'))['price__sum']
             }
-            
-                                          
+                
                 # Calculate and add the quantities, CBM, and price for each item
-                invoice_summaries.append(invoice_summary)
 
                 if invoice.status == 'Paid':
                     if transaction.transaction_type == 'debit': 
                         total_debit += transaction.amount or 0
                     else:
                         total_credit += transaction.amount or 0
+                print('ok')        
 
                 total_quantity += invoice_summary['total_quantity'] or 0
                 total_cbm += invoice_summary['total_cbm'] or 0
                 total_price += invoice_summary['total_price'] or 0
-            
+                invoice_summaries.append(invoice_summary)
+
+
 
             #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
             invoice_summaries = sorted(invoice_summaries, key=lambda x: x['container_manifaist'])
 
             context['invoice_summaries'] = invoice_summaries
+            context['free_invoice_summaries'] = free_invoice_summaries
+
             context['total_debit'] = total_debit
             context['total_credit'] = total_credit
             context['total_quantity'] = total_quantity
             context['total_cbm'] = total_cbm
             context['total_price'] = total_price
-        
 
-            return render(request, 'home/customer_detail.html', context)
+            context['free_total_debit'] = free_total_debit
+            context['free_total_credit'] = free_total_credit
+            context['free_total_quantity'] = free_total_quantity
+            context['free_total_cbm'] = free_total_rate
+            context['free_total_price'] = free_total_price
+        
+            print('222222')
+            context['customer_id'] = customer.id
+            return redirect(request, 'home/customer_detail.html', context)
+            #xxreturn redirect('customer_detail', customer_id=customer.id)
+
 
 @login_required(login_url="/login/")
 def add_customer(request):
@@ -611,7 +777,9 @@ def invoices_detail(request):
     except:
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
-    
+
+
+
 
 @login_required(login_url="/login/")
 def invoices(request):
@@ -754,7 +922,71 @@ def Invoice_save(request):
 
     else:
         return JsonResponse({"error": "Invalid request method"})
+    
 
+
+
+@login_required(login_url="/login/")
+def free_invoice_save(request):
+
+    if request.method == "POST":
+        invoice_items = json.loads(request.body)
+        totalprice = 0
+        totalpack = 0
+        customer = None
+        items = []
+
+        print("<><><><><==--==><><><><>")
+        customer = Customer.objects.get(id=invoice_items[0]["id_customer"])
+
+        if invoice_items[0]["invoice_in"] == 'invoice_in':
+
+            #print("invoice id ======><><><><>", invoice_items[0])
+
+            invoice = FreeInvoice.objects.get(id = invoice_items[0]["invoice_id"])
+            items_for_invoice = invoice.freeitems.all()
+            items_for_invoice.delete()  
+        
+        else:
+
+            invoice = FreeInvoice(customer=customer)
+            invoice.save()  # Save the invoice to obtain the ID
+        
+        for item in invoice_items:
+            
+            item_obj = FreeItem(
+                invoice=invoice,
+                item=item["item"],
+                quantity=item["quantity"],
+                rate=item["rate"],
+                price=item["price"]
+            )
+            item_obj.save()
+
+            items.append(item_obj)
+
+            totalprice += item["price"]
+            totalpack += item["quantity"]
+
+        context['totalprice'] = totalprice
+        context['totalpack'] = totalpack
+
+        context['customer'] = customer
+        context['invoice'] = invoice
+        context['items'] = items
+
+        if invoice_items[0]["invoice_in"] == 'invoice_in':
+            messages.success(request, "free invoice edited successfully.")
+            invoice_items[0]["invoice_in"] = 'invoice_out'
+        else:
+            messages.success(request, "free invoice saved successfully.")
+
+        load_template = '/free_invoice/invoice_view.html'
+        html_template = loader.get_template('home/' + load_template)
+        return HttpResponse(html_template.render(context, request))
+
+    else:
+        return JsonResponse({"error": "Invalid request method"})
 
 def save_images(request):
     if request.method == 'POST':
@@ -807,6 +1039,53 @@ def delete_invoice(request):
     return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 
+def delete_free_invoice(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        try:
+            invoice = FreeInvoice.objects.get(id=invoice_id)
+            customer = invoice.customer
+            invoice.delete()
+            messages.success(request, 'Invoice deleted successfully')
+
+        except FreeInvoice.DoesNotExist:
+            messages.error(request, 'Invoice not found')
+    else:
+        messages.error(request, 'Invalid request')
+
+    #request.GET['customer_id'] = customer.id
+    context['customer_id'] = customer.id
+    #print('customer.id', customer.id)
+    return redirect('home/customer_detail.html', context)  # Replace 'invoices' with the appropriate URL name of the invoices page
+
+
+def cencel_freetransanction(request):
+    if request.method == 'POST':
+
+        invoice_id = request.POST.get('invoice_id')
+        customer_id = request.POST.get('customer_id')
+
+        try:
+            invoice = FreeInvoice.objects.get(id=invoice_id)
+            transaction = FreeTransaction.objects.get(invoice=invoice)
+            invoice.status = 'Unpaid'
+            invoice.save()
+            transaction.delete()
+
+            messages.success(request, 'Transaction Cencel successfully')
+
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Transaction not found')
+    else:
+        messages.error(request, 'Transaction request')
+
+    context['customer_id'] = customer_id
+    #print('customer.id', customer.id)
+    return redirect('home/customer_detail.html', context)  
+
+
+
+
 def cencel_transanction(request):
     if request.method == 'POST':
 
@@ -826,8 +1105,9 @@ def cencel_transanction(request):
             messages.error(request, 'Transaction not found')
     else:
         messages.error(request, 'Transaction request')
-
-    return redirect('customer_detail', customer_id=customer_id)  # Replace 'invoices' with the appropriate URL name of the invoices page
+        
+    context['customer_id'] = customer_id
+    return redirect('home/customer_detail.html', customer_id=customer_id)  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 
 
@@ -871,10 +1151,71 @@ def change_balance(request):
             messages.error(request, 'Transaction not found')
     else:
         messages.error(request, 'Transaction request')
+    context['customer_id'] = customer_id
 
-    return redirect('customer_detail', customer_id=customer_id)  # Replace 'invoices' with the appropriate URL name of the invoices page
+    return redirect('home/customer_detail.html', customer_id=customer_id)  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 
+
+
+def change_free_invoice_status(request):
+
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        customer_id = request.POST.get('customer_id')
+        totalprice = float(request.POST.get('totalprice'))
+
+        option = request.POST.get('option')
+        amount = float(str(request.POST.get('amount')))
+
+        customer = Customer.objects.get(id=customer_id)
+        balance = float(customer.balance)
+        
+        dif = amount - totalprice
+
+        balance = balance + dif
+        
+        customer.balance = balance
+
+        print("amount :", amount)
+        print("totalprice :", totalprice)
+        print("dif :", dif)
+        print("balance :", balance)
+ 
+
+        try:
+            invoice = FreeInvoice.objects.get(id=invoice_id)
+
+            FreeTransaction.objects.create(
+                invoice=invoice,
+                amount=amount,
+                rest=balance,
+                transaction_type=option,
+                date=timezone.now(),
+            )
+
+            invoice.status = 'Paid'
+            invoice.save()
+            customer.save()
+            messages.success(request, 'Invoice status change successfully')
+
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Invoice not found')
+    else:
+        messages.error(request, 'Invalid request')
+        invoice = get_object_or_404(FreeInvoice, id=invoice_id)
+
+    #context['customer_id'] = customer_id
+    
+    #load_template = 'customer_detail.html'
+
+    context['customer_id'] = customer.id
+    #print('customer.id', customer.id)
+    return redirect('home/customer_detail.html', context)  
+
+    #invoice_view.html?invoice_id={{ invoice_summary.invoice_id }}
+
+    #return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 def change_invoice_status(request):
 
@@ -926,8 +1267,9 @@ def change_invoice_status(request):
     #context['customer_id'] = customer_id
     
     #load_template = 'customer_detail.html'
+    context['customer_id'] = customer.id
 
-    return redirect('customer_detail', customer_id=customer_id)
+    return redirect('home/customer_detail.html', customer_id=customer_id)
 
     #invoice_view.html?invoice_id={{ invoice_summary.invoice_id }}
 
@@ -1033,6 +1375,55 @@ def generate_pdf(request):
     return HttpResponse('Errors')
 
 
+def generate_free_pdf(request):
+
+
+        invoice_id = request.POST.get('invoice_id')
+        invoice = get_object_or_404(FreeInvoice, id=invoice_id)
+
+        invoice_summaries = []
+
+        #print("containers", container_data)
+        # Get all items related to the invoice
+        items = invoice.freeitems.all()
+            
+        context['invoice_summaries'] = invoice_summaries
+        context['invoice'] = invoice
+        context['customer'] = invoice.customer
+        context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
+        context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
+
+        # Load the new 'transaction.style.pdf.html' template
+        template = get_template('home/free_invoice/free_invoice_pdf.html')
+        html = template.render(context)
+
+        # Generate the PDF
+        pdf_file = BytesIO()
+        pisa.CreatePDF(BytesIO(html.encode('UTF-8')), dest=pdf_file)
+
+        # Set the response headers to trigger the download
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = f'attachment; filename="transaction_{invoice.id}.pdf"'
+        response.write(pdf_file.getvalue())
+
+        return response
+'''
+def cancel_transanction_balance(request):
+    if request.method == 'POST':
+        transaction_id = request.POST.get('transaction_id')
+        # Retrieve the specific transaction based on the transaction_id
+        transaction = get_object_or_404(CustomerTransaction, id=transaction_id)
+
+        # Perform the deletion of the transaction
+        transaction.delete()
+
+        # Add a success message
+        messages.success(request, 'Transaction deleted successfully.')
+
+    return redirect('customer_detail', customer_id=transaction.customer_id)
+'''
+
+
 def generate_transaction_pdf(request):
 
     if request.method == 'POST':
@@ -1100,5 +1491,6 @@ def cancel_transanction_balance(request):
 
         # Add a success message
         messages.success(request, 'Transaction deleted successfully.')
+    context['customer_id'] = customer.id
 
-    return redirect('customer_detail', customer_id=transaction.customer_id)
+    return redirect('home/customer_detail.html', customer_id=transaction.customer_id)

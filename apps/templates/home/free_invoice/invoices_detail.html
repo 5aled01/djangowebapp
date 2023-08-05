@@ -1,0 +1,479 @@
+{% extends 'layouts/base.html' %} 
+
+{% block title %} Add Invoice {% endblock title%} 
+
+{% block content %} 
+
+{% load static %}
+<link 
+  rel="stylesheet"
+  type="text/css"
+  href="{% static '/assets/css/style_invoice.css' %}"
+/>
+<link rel="license" href="https://www.opensource.org/licenses/mit-license/" />
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+<link rel="canonical" href="https://appseed.us/admin-dashboards/django-dashboard-argon">
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+<!-- Icons -->
+<link rel="stylesheet" href="/static/assets/vendor/nucleo/css/nucleo.css" type="text/css">
+<link rel="stylesheet" href="/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
+<!-- Page plugins -->
+<!-- Argon CSS -->
+<link rel="stylesheet" href="/static/assets/css/argon.css?v=1.2.0" type="text/css">
+
+
+<div
+  class="header pb-4 d-flex align-items-center"
+  style="
+    min-height: 300px;
+    background-image: url(/static/assets/img/theme/containers.jpg);
+    background-size: cover;
+    background-position: center top;
+  "
+>
+  <!-- Mask -->
+  <span class="mask bg-gradient-default opacity-5"></span>
+  <!-- Header container -->
+  <div class="container-fluid d-flex align-items-center">
+    <div class="row">
+      <div class="col-lg-10 col-md-10">
+        <h1 class="display-2 text-white">
+
+        {% if invoice_in == 'invoice_in' %}
+
+        <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
+          Edit free invoice for the customer {{ customer.name }}
+        </a>
+
+        {% else %}
+          <a class="display-2 text-white" href="/customer_detail.html?customer_id={{ customer.id }}">
+            Add free invoice for the customer {{ customer.name }}
+          </a>
+          {% endif %}
+        </h1>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Page content -->
+<div class="container-fluid mt--5">
+  <div class="row">
+    <div class="col">
+      <div class="card">
+        <div class="card-body">
+          <article>
+            <!--/sinvoice_save-->
+            <form id="invoice-form" action="#" id="navbar-search-main" method="POST">
+              {% csrf_token %}
+
+              <h1>Customer</h1>
+              <address>
+                <p>
+                  {{ customer.name }}<br />{{ customer.brand }} <br />
+                  Phone: +{{ customer.phone_number }}
+                </p>
+              </address>
+              <table class="meta">
+
+                {% if invoice_in == 'invoice_in' %}
+
+                <input type="hidden" name="invoice_in" class="invoice_in-input" value="{{ invoice_in }}">
+                <input type="hidden" name="invoice_id" id="invoice_id" class="invoice_id-input" value="{{ invoice_id }}">
+
+                <tr>
+                  <th><span>Invoice #</span></th>
+                  <td><span>{{ invoice.id }}</span></td>
+                </tr>
+
+                {% else %}
+
+                <tr>
+                  <th><span>Invoice #</span></th>
+                  <td><span>----------</span></td>
+                </tr>
+
+                {% endif %}
+                <tr>
+                  <th><span>Date</span></th>
+                  <td><span id="date"></span></td>
+                </tr>
+                <tr> {% if messages %}
+                        {% for message in messages %}
+                                  {{message}}
+                        {% endfor %}
+                      {% endif %}  
+
+                </tr>
+                <tr>
+                  <th><span>Augmentation</span></th>
+                  <td>
+                    <select id="aug" name="aug" class="aug-input">
+                      <option value="0">0%</option>
+                      <option value="1">1%</option>
+                      <option value="2">2%</option>
+                      <option value="3">3%</option>
+                      <option value="4">4%</option>
+                      <option value="5">5%</option>
+                      <option value="6">6%</option>
+                      <option value="7">7%</option>
+                      <option value="8">8%</option>
+                    </select>
+                    (Before adding items)
+                  </td>
+                </tr>
+              </table>
+              <!-- ... previous code ... -->
+
+              <table class="inventory">
+                <thead>
+                  <tr>
+                    <th><span>Description of the Goods</span></th>
+                    <th><span>Quantity</span></th>
+                    <th><span>Rate</span></th>
+                    <th><span>Prince (AED)</span></th>
+                  </tr>
+                </thead>
+
+                <tbody id="item-list">
+
+                  {% if invoice_in == 'invoice_in' %}
+
+                    {% for item in items %}
+
+                    <tr class="default-row">
+                      <td>
+                        <a class="cut">-</a
+                        ><input type="text" class="Description-input" value="{{ item.item }}" required />
+                      </td>
+  
+   
+                        <input type="hidden" class="source-input" value="{{ item.source }}" required />
+
+  
+                      <td>
+                        <input type="number" class="quantity-input" value="{{ item.quantity }}" required />
+                      </td>
+    
+                        <input type="hidden" class="length-input" value="{{ item.length }}" required />
+    
+          
+                        <input type="hidden" class="width-input" value="{{ item.width }}" required />
+             
+               
+                        <input type="hidden" class="height-input" value="{{ item.height }}" required />
+             
+                      <td>
+                        <input type="number" class="rate-input"  value="1" required />
+                      </td>
+                      <td class="price-input"  >{{ item.price }}</td>
+                    </tr>
+  
+                    {% endfor %}
+
+                  {% else %}
+
+                  <tr class="default-row">
+                    <td>
+                      <a class="cut">-</a
+                      ><input type="text" class="Description-input" required />
+                    </td>
+
+
+                      <input type="hidden" class="source-input" value="---" required />
+
+
+                    <td>
+                      <input type="number" class="quantity-input" required />
+                    </td>
+
+                      <input type="hidden" class="length-input" value="0" required />
+
+
+                      <input type="hidden" class="width-input" value="0" required />
+
+
+                      <input type="hidden" class="height-input" value="0" required />
+
+                    <td>
+                      <input type="number" class="rate-input"  value="1" required />
+                    </td>
+                    <td class="price-input"></td>
+                  </tr>
+
+                  {% endif %}
+
+                </tbody>
+              </table>
+
+              <a class="add">+</a>
+              <table class="balance">
+                <tr>
+                  <th><span>Total Packages</span></th>
+                  <td>
+                    <input
+                      type="number"
+                      class="totalpack-input"
+                      disabled="true"
+                      required
+                    />
+                  </td>
+                </tr>
+                <tr>
+                  <th><span>Grand Total</span></th>
+                  <td>
+                    <input
+                      class="totalprice-input"
+                      type="number"
+                      disabled="true"
+                      required
+                    />
+                  </td>
+                </tr>
+
+                <tr>
+                  <th class="rm"></th>
+                  <input
+                    type="hidden"
+                    class="customer-input"
+                    value="{{ customer.id }}"
+                  />
+                  <td id="rm">
+                    <div id="loading-spinner" class="d-none">
+                      <i class="fas fa-circle-notch fa-spin"></i>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-sm btn-primary"  id="save_invoice" data-target="#navbar-search-main">
+                      Save Invoice
+                    </button>
+
+                    
+
+                  </td>
+                </tr>
+              </table>
+            </form>
+
+            
+
+          </article>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% include "includes/footer.html" %} {% endblock content %}
+
+<!-- Specific JS goes HERE -->
+<!-- Specific JS goes HERE -->
+
+{% block javascripts %}
+<script>
+
+  // Get the current date
+  const currentDate = new Date();
+
+  // Define the options for date formatting
+  const options = {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+
+  // Format the date as a string in English
+  const formattedDate = currentDate.toLocaleDateString("en-US", options);
+
+  // Display the formatted date on the HTML page
+  document.getElementById("date").textContent = formattedDate;
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const addRowButton = document.querySelector(".add");
+    const itemList = document.getElementById("item-list");
+    const totalPackInput = document.querySelector(".totalpack-input");
+    const totalPriceInput = document.querySelector(".totalprice-input");
+
+    addRowButton.addEventListener("click", function () {
+      const newRow = generateTableRow();
+      itemList.appendChild(newRow);
+      calculateTotals();
+    });
+
+    itemList.addEventListener("click", function (event) {
+      if (event.target.classList.contains("cut")) {
+        const row = event.target.parentNode.parentNode;
+        if (!row.classList.contains("default-row")) {
+          itemList.removeChild(row);
+          calculateTotals();
+        }
+      }
+    });
+
+    itemList.addEventListener("input", function (event) {
+      const row = event.target.parentNode.parentNode;
+      const quantityInput = row.querySelector(".quantity-input");
+
+      const costInput = document.getElementById("invoice_id");
+
+      const augInput = document.getElementById("aug");
+
+      const lengthInput = row.querySelector(".length-input");
+      const widthInput = row.querySelector(".width-input");
+      const heightInput = row.querySelector(".height-input");
+      const priceInput = row.querySelector(".price-input");
+      const rateInput = row.querySelector(".rate-input");
+      //const id_customer = row.querySelector(".customer-input");
+      const id_customer = row.querySelector(".customer-input")?.value ?? row.querySelector(".rate-input");
+      //const invoice_id = row.querySelector(".invoice_id-input");
+      const invoice_id = row.querySelector(".invoice_id-input")?.value ?? row.querySelector(".rate-input");
+
+      if (
+        event.target === quantityInput ||
+        event.target === lengthInput ||
+        event.target === widthInput ||
+        event.target === heightInput ||
+        event.target === augInput ||
+        event.target === rateInput
+      ) {
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const length = parseFloat(lengthInput.value) || 0;
+        const width = parseFloat(widthInput.value) || 0;
+        const height = parseFloat(heightInput.value) || 0;
+        const rate = parseFloat(rateInput.value) || 0;
+
+        const aug = augInput.value || 0;
+
+        console.log("aug", aug);
+
+        const price = quantity * rate ;
+
+
+        priceInput.textContent = price.toFixed(2);
+
+        calculateTotals();
+      }
+    });
+    function generateTableRow() {
+      const row = document.createElement("tr");
+      row.innerHTML =
+        `<td><a class="cut">-</a><input type="text" class="Description-input required"></td>` +
+        '<input type="hidden" class="source-input"  value="---" required> ' +
+        '<td><input type="number" class="quantity-input" required></td>' +
+        '<input type="hidden" class="length-input" value="0" required>' +
+        '<input type="hidden" class="width-input" value="0" required>' +
+        '<input type="hidden" class="height-input"  value="0" required>' +
+        '<td><input type="number" class="rate-input"  value="1" required></td>' +
+        `<td class="price-input"></td>`;
+       
+
+      return row;
+    }
+
+    function calculateTotals() {
+      const rows = itemList.querySelectorAll("tr");
+      let totalPackages = 0;
+      let totalPrice = 0;
+
+      rows.forEach(function (row) {
+        const quantityInput = row.querySelector(".quantity-input");
+        const priceInput = row.querySelector(".price-input");
+
+        const quantity = parseFloat(quantityInput.value) || 0;
+        const price = parseFloat(priceInput.textContent) || 0;
+
+        totalPackages += quantity;
+        totalPrice += price;
+      });
+
+      totalPackInput.value = totalPackages;
+      totalPriceInput.value = totalPrice.toFixed(2);
+    }
+
+    const invoiceForm = document.getElementById("invoice-form");
+    invoiceForm.addEventListener("submit", function (event) {
+      
+      const save_invoice = document.getElementById("save_invoice");
+      save_invoice.disabled = true;
+
+      $("#loading-spinner").removeClass("d-none");
+
+
+      event.preventDefault();
+
+      const rows = itemList.querySelectorAll("tr");
+      const invoiceData = [];
+
+      rows.forEach(function (row) {
+        const descriptionInput = row.querySelector(".Description-input");
+
+        const sourceInput = row.querySelector(".source-input");
+
+        const quantityInput = row.querySelector(".quantity-input");
+        const lengthInput = row.querySelector(".length-input");
+        const widthInput = row.querySelector(".width-input");
+        const heightInput = row.querySelector(".height-input");
+        const rateInput = row.querySelector(".rate-input");
+        const priceInput = row.querySelector(".price-input");
+        const customerInput = document.querySelector(".customer-input");
+        //const invoice_inrInput = document.querySelector(".invoice_in-input");
+        const invoice_inrInput = document.querySelector(".invoice_in-input") ?? document.querySelector(".customer-input");
+        //const invoice_idrInput = document.getElementById("invoice_id");
+        const invoice_idrInput = document.querySelector(".invoice_id-input") ?? document.querySelector(".customer-input");
+
+        const item = {
+          item: descriptionInput.value.trim(),
+          source: sourceInput.value.trim(),
+          quantity: parseFloat(quantityInput.value) || 0,
+          length: parseFloat(lengthInput.value) || 0,
+          width: parseFloat(widthInput.value) || 0,
+          height: parseFloat(heightInput.value) || 0,
+          rate: parseFloat(rateInput.value) || 0,
+          price: parseFloat(priceInput.textContent) || 0,
+          id_customer: customerInput.value.trim(),
+          invoice_in: invoice_inrInput.value.trim(),
+          invoice_id: invoice_idrInput.value,
+
+        };
+
+        invoiceData.push(item);
+      });
+
+      console.log("invoiceData: ", invoiceData);
+
+      const invoiceItems = Object.values(invoiceData);
+
+      // Send the invoiceItems to the server using AJAX or submit the form to a backend endpoint
+      // Here, we'll use AJAX as an example
+
+      const csrfToken = document.getElementsByName("csrfmiddlewaretoken")[0]
+        .value;
+
+      const request = new XMLHttpRequest();
+      request.open("POST", "{% url 'free_invoice_save' %}");
+      request.setRequestHeader("Content-Type", "application/json");
+      request.setRequestHeader("X-CSRFToken", csrfToken);
+      request.onload = function () {
+        if (request.status === 200) {
+          // Handle successful response
+          console.log("Invoice saved successfully!");
+          document.documentElement.innerHTML = request.responseText;
+          // Redirect to a success page or perform any additional actions
+        } else {
+          // Handle error response
+          console.error("Failed to save invoice");
+          // Show an error message or perform any additional error handling
+        }
+      };
+      request.send(JSON.stringify(invoiceItems));
+    });
+  });
+</script>
+
+
+<script>
+  
+</script>
+
+
+{% endblock javascripts %}

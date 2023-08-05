@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>invoice card</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="canonical" href="https://appseed.us/admin-dashboards/django-dashboard-argon">
+  
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700">
+  <!-- Icons -->
+  <link rel="stylesheet" href="/static/assets/vendor/nucleo/css/nucleo.css" type="text/css">
+  <link rel="stylesheet" href="/static/assets/vendor/@fortawesome/fontawesome-free/css/all.min.css" type="text/css">
+  <!-- Page plugins -->
+  <!-- Argon CSS -->
+  <link rel="stylesheet" href="/static/assets/css/argon.css?v=1.2.0" type="text/css">
+
+  {% include "includes/scripts.html" %}
+
+  <!-- Specific JS goes HERE --> 
+  {% block javascripts %}{% endblock javascripts %}
+
+  <script src="/static/assets/js/argon.js?v=1.2.0"></script>
+
+
+  <style type="text/css">
+    body {
+      margin-top: 20px;
+      background-color: #eee;
+    }
+
+    .card {
+      box-shadow: 0 20px 27px 0 rgb(0 0 0 / 5%);
+    }
+
+    .card {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      word-wrap: break-word;
+      background-color: #fff;
+      background-clip: border-box;
+      border: 0 solid rgba(0, 0, 0, 0.125);
+      border-radius: 1rem;
+    }
+
+    #image-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .imported-image {
+      max-width: 200px;
+      display: block;
+      margin: 5px;
+      transition: transform 0.3s;
+    }
+
+    .imported-image.enlarged {
+      transform: scale(3);
+    }
+  </style>
+</head>
+<body>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
+    integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+  <div class="container">
+
+    <div class="row">
+      <div class="col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <div class="invoice-title">
+              <div class="mb-4">
+                <h2 class="mb-1 text-muted">
+                  FERRY OCEANAIR SHIPPING SERVICES L.L.C
+                </h2>
+                
+                  {% if invoice.status == 'Unpaid' %}
+                  <h2 class="mb-1" style="color: rgb(201, 107, 107);"> {{ invoice.status }}</h2>
+                {% else %}
+                <h2 class="mb-1" style="color: rgb(86, 172, 0);"> {{ invoice.status }}</h2>
+                {% endif %}   
+                
+                
+
+    <!-- -------------------------- -->
+    <div class="modal fade" id="addCustomerModal" tabindex="-1" role="dialog" aria-labelledby="addCustomerModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCustomerModalLabel">Add new transactions</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+
+          
+
+          <form action="{% url 'change_free_invoice_status' %}" method="post" onsubmit="return validateForm()">
+          <div class="modal-body">
+            <!-- Add containers form goes here -->
+                {% csrf_token %}
+                <!-- ... previous code ... -->  
+                <div class="pl-lg-4">
+                  <div class="row">
+                    <div class="col-lg-4">
+                      <div class="form-group">
+                        <label class="form-control-label" for="input-Option">Option</label>
+                        <select name="option" id="selectInput" class="form-control">
+                          <option value="credit">Credit</option>
+                          <option value="debit">Debit</option>
+                        </select>
+
+
+                      </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                      <div class="form-group">
+                        <label class="form-control-label" for="input-Phone">Amount</label>
+                        <input type="number" id="textInput" step="any" name="amount" class="form-control" value="{{ totalprice }}" placeholder="Amount..." required>
+                      </div>
+                    </div>
+
+                <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+                <input type="hidden" name="customer_id" value="{{ customer.id }}">
+                <input type="hidden" id="tInput" name="totalprice" value="{{ totalprice }}">
+
+                </div>
+
+                <div class="row">
+                  <div class="col-lg-14">
+
+                    Note: The account balance is <strong>{{ customer.balance }} </strong> 
+
+                    </div></div>
+                </div>
+              <!-- Form fields for adding a new customer -->
+            
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+              <button type="submit" class="btn btn-primary" onclick="return confirm('Are you sure you want to change this invoice status to paid?')">Confirme</button>
+            </div>
+          </div>
+      </form>
+      </div>
+      </div>
+
+      
+
+    <!-- -------------------------- -->
+
+    
+
+              </div>
+            </div>
+            <hr class="my-4" />
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="text-muted">
+                  <h5 class="font-size-15 mb-3">Billed To:</h5>
+                  <a href="/customer_detail.html?customer_id={{ customer.id }}">
+                    <i class="fa fa-address-book"></i>
+                  </a> 
+                  <h5 class="font-size-15 mb-2">{{ customer.name }}</h5>
+                  <p>Phone: {{ customer.phone_number }}</p>
+                </div>
+              </div>
+
+              <div class="col-sm-6">
+                <div class="text-muted text-sm-end">
+                  <div>
+                    <h5 class="font-size-15 mb-1">Invoice No:</h5>
+                    <p>#{{ invoice.id }}</p>
+                  </div>
+                  <div class="mt-4">
+                    <h5 class="font-size-15 mb-1">Invoice Date:</h5>
+                    <p>{{ invoice.date }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="py-2">
+              <h5 class="font-size-15">Order Summary</h5>
+              <div class="table-responsive">
+                <table class="table align-middle table-nowrap table-centered mb-0">
+                  <thead>
+                    <tr>
+                      <th>Description of the Goods</th>
+                      <th>Quantity</th>
+                      <th>Rate</th>
+                      <th class="text-end" style="width: 120px;">Price (AED)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for invoice in items %}
+                    <tr>
+                      <td>
+                        <div>
+                          <h5 class="text-truncate font-size-14 mb-1">
+                            {{ invoice.item }}
+                          </h5>
+                        </div>
+                      </td>
+                      <td>{{invoice.quantity}}</td>
+                      <td>{{ invoice.rate }}</td>
+                      <td class="text-end">{{ invoice.price }}</td>
+                    </tr>
+                    {% endfor %}
+
+                    <tr>
+                      <th scope="row" colspan="3" class="text-end">
+                        Total Packages
+                      </th>
+                      <td class="text-end">{{ totalpack }}</td>
+                    </tr>
+
+                    <tr>
+                      <th scope="row" colspan="3" class="border-0 text-end">
+                        Grand Total
+                      </th>
+                      <td class="border-0 text-end">
+                        <strong><p class="m-0 fw-semibold">{{totalprice}} AED</p></strong>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="d-print-none mt-4">
+                <div class="float-end">
+                  <form action="{% url 'delete_free_invoice' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+                    <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure you want to delete this invoice?')"><i class="fa fa-trash"></i></button>
+                  </form>
+
+                  {% if invoice.status == 'Unpaid' %}
+
+                    <a href="#" data-toggle="modal" data-target="#addCustomerModal">
+                        <span class="btn btn-success me-1"><i class="fa fa-check-square" aria-hidden="true"></i></span>
+                    </a>
+
+                  {% else %}
+
+                  <form action="{% url 'cencel_freetransanction' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+                    <input type="hidden" name="customer_id" value="{{ customer.id }}">
+
+                    <button type="submit" class="btn btn-info" onclick="return confirm('Are you sure you want to cencel transanction fro this this invoice?')"><i class="fa fa-window-close" aria-hidden="true"></i></button>
+                  </form>
+                  
+                  {% endif %}
+                 
+
+                  <form action="{% url 'generate_free_pdf' %}" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <input name="invoice_id" type="hidden" class="customer-input" value="{{ invoice.id }}">
+                   
+                    <button type="submit" class=" btn btn-primary"><i class="fa fa-download"></i></button>
+                  </form>
+                </div>
+              </div>
+                  <div id="image-container" class="d-flex flex-wrap justify-content-center align-items-center">
+                    {% for img in images %}
+                      <img src="{{ img.image.url }}" class="imported-image" onclick="enlargeImage(this)" />
+                    {% endfor %}
+                    {% if images|length == 0 and selectedFiles|length == 0 %}
+                      <p>No images found.</p>
+                    {% endif %}
+                  </div>
+                  <div id="success-message" style="display: none;" class="alert alert-success" role="alert">
+                    Image saved successfully.
+                  </div>
+                  <input type="file" id="image-input" accept="image/*" style="display: none;" />
+                  
+                  <div id="invoice-details" data-invoice-id="{{ invoice.id }}"></div>
+                  
+                  {% csrf_token %}
+                  
+                  <button id="add-image-btn" class="btn btn-primary me-1">
+                    <i class="fa fa-plus"></i> Import Image
+
+                    
+
+                  </button>
+
+                  
+                  
+                  <button id="save-images-btn" class="btn btn-primary" disabled>
+                    Save Images
+
+                    <div id="loading-spinner" class="d-none">
+                      <i class="fas fa-circle-notch fa-spin"></i>
+                    </div>
+                    
+                  </button>
+                </div>
+              </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript">
+    let selectedFiles = [];
+    let savedCount = 0;
+
+    const deleteInvoiceBtn = document.getElementById('delete-invoice-btn');
+    const successMessage = document.getElementById('success-message');
+    const addImageBtn = document.getElementById('add-image-btn');
+    const imageContainer = document.getElementById('image-container');
+    const imageInput = document.getElementById('image-input');
+    const saveImagesBtn = document.getElementById('save-images-btn');
+    const invoiceId = document.getElementById('invoice-details').dataset.invoiceId;
+    const csrfToken = "{{ csrf_token }}";
+
+    addImageBtn.addEventListener('click', () => {
+      imageInput.click();
+    });
+
+    imageInput.addEventListener('change', (event) => {
+    selectedFiles = Array.from(event.target.files);
+    imageContainer.innerHTML = ''; // Clear the existing images
+    for (let i = 0; i < selectedFiles.length; i++) {
+      const file = selectedFiles[i];
+      const imageUrl = URL.createObjectURL(file);
+      const imageElement = document.createElement('img');
+      imageElement.src = imageUrl;
+      imageElement.classList.add('imported-image');
+      imageElement.width = 120;
+      imageContainer.appendChild(imageElement);
+
+      imageElement.addEventListener('click', function() {
+        enlargeImage(this);
+      });
+    }
+    saveImagesBtn.disabled = selectedFiles.length === 0;
+
+
+  });
+
+    saveImagesBtn.addEventListener('click', () => {
+
+      saveImagesBtn.disabled = true;
+
+      $("#loading-spinner").removeClass("d-none");
+
+      const formData = new FormData();
+      formData.append('invoice_id', invoiceId);
+
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const key = `image_${i + 1}`;
+        const file = selectedFiles[i];
+        formData.append(key, file, file.name);
+      }
+
+      fetch('/save_images', {
+        method: 'POST',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': csrfToken,
+        },
+        body: formData,
+      })
+        .then((response) => {
+          if (response.ok) {
+            console.log('Images saved successfully');
+            savedCount++; // Increment the savedCount variable
+            if (savedCount === selectedFiles.length) {
+              console.log('All images saved successfully');
+              saveImagesBtn.disabled = true;
+              $("#loading-spinner").addClass("d-none");
+
+              displayInvoiceImages(); // Call the function to display the saved images
+              showSuccessMessage();
+            }
+          } else {
+            console.error('Error:', response.statusText);
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    });
+    function deleteInvoice() {
+      const confirmDelete = confirm('Are you sure you want to delete this invoice?');
+      if (confirmDelete) {
+        const deleteInvoiceForm = document.getElementById('delete-invoice-form');
+        deleteInvoiceForm.submit();
+      } 
+    }
+    function displayInvoiceImages() {
+      const invoiceId = '{{ invoice.id }}';
+
+      fetch(`/get_invoice_images?invoice_id=${invoiceId}`, {
+        method: 'GET',
+        headers: {
+          'X-Requested-With': 'XMLHttpRequest',
+          'X-CSRFToken': '{{ csrf_token }}',
+        },
+      })
+        .then((response) => response.json())
+        .then((imageUrls) => {
+          const imageContainer = document.getElementById('image-container');
+          imageContainer.innerHTML = '';
+
+          if (imageUrls.length > 0) {
+            imageUrls.forEach((imageUrl) => {
+              const imageElement = document.createElement('img');
+              imageElement.src = imageUrl;
+              imageElement.classList.add('imported-image');
+              imageElement.width = 120;
+
+              imageElement.addEventListener('click', function() {
+                enlargeImage(this);
+              });
+
+              imageContainer.appendChild(imageElement);
+            });
+          } else {
+            const noImagesMsg = document.createElement('p');
+            noImagesMsg.textContent = 'No images found.';
+            imageContainer.appendChild(noImagesMsg);
+          }
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+
+    window.addEventListener('DOMContentLoaded', displayInvoiceImages);
+
+    function enlargeImage(imageElement) {
+      imageElement.classList.toggle('enlarged');
+    }
+
+  const selectInput = document.getElementById("selectInput");
+  const textInput = document.getElementById("textInput");
+  const tInput = document.getElementById("tInput");
+
+  // Function to update the state of the text input based on the selected option
+  function updateTextInputState() {
+    const selectedValue = selectInput.value;
+    if (selectedValue === "credit") {
+      textInput.disabled = false; // Enable the text input
+    } else {
+      textInput.disabled = true;
+      textInput.value = tInput.value
+      // Disable the text input
+    }
+  }
+
+  // Listen for changes on the select input
+  selectInput.addEventListener("change", updateTextInputState);
+
+  // Initialize the state of the text input based on the initial select value
+  updateTextInputState();
+
+
+  </script>
+
+
+</body>
+</html>

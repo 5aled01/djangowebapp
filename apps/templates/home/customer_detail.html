@@ -279,7 +279,124 @@
 
                                       </div>
                         </div>
+                                 
+          
+                        <div class="card">
+                          <div class="card-body">
+                            
+                            
+                              <div class="card-header p-4">
+                              <div class="float-left"> <h3 class="mb-0">List of free invoices </h3>
+                                <a href="/free_invoice/invoices_detail.html?customer_id={{ customer.id }}">+</a>
+                              </div>
+                              
+                              </div>
+                              <div class="card-body">
+                              <div class="row mb-4">
+                              <div class="col-sm-6">
+                              
+                              </div>
+                              <div class="col-sm-6 ">
+                              </div>
+                              </div>
+                              <div class="table-responsive-sm">
+                              <table class="table table-striped">
+                              <thead>
+                              <tr>
+                              <th>رقم الفاتورة</th>
+                              <th>عدد القطع</th>
+                              <th>المقاس</th>
+                              <th class="right">الكلفة</th>
+                              <th class="right">حالة الفاتورة</th>
+                              <th class="right">Debit</th>
+                              <th class="right">Credit</th>
+                              <th class="right">Balance</th>
+                              <th class="center"></th>
+
+                              </tr>
+                              </thead>
+                              <tbody>
+                              <tr>
+                                  {% for invoice_summary in free_invoice_summaries %}
+                                      <td>{{ invoice_summary.invoice_id }}</td>
+                                      <td>{{ invoice_summary.total_quantity }}</td>
+                                      <td>{{ invoice_summary.total_rate }}</td>
+                                      <td class="right">{{ invoice_summary.total_price }}</td>
+                                      {% if invoice_summary.status == 'Unpaid' %}
+                                        <td class="right" style="color: rgb(255, 59, 59);">{{ invoice_summary.status }}</td>
+                                        <td class="right">-----</td>
+                                      <td class="right">-----</td>
+                                      <td class="right">-----</td>
+                                      {% else %}
+                                      <td class="right" style="color: rgb(86, 172, 0);">{{ invoice_summary.status }}</td>
+                                        {% if invoice_summary.transaction.transaction_type == 'debit' %}
+                                          <td class="right">{{ invoice_summary.transaction.amount }}</td>
+                                          <td class="right">-----</td>
+
+                                        {% else %}
+
+                                        <td class="right">-----</td>
+                                        <td class="right">{{ invoice_summary.transaction.amount }}</td>
+
+                                        {% endif %}
+
+                                        <td class="right">{{ invoice_summary.transaction.rest }}</td>
+
+                                      {% endif %}
                                       
+
+
+                                      <td class="text-center">
+                                        <div class="dropdown">
+                                          <a class="btn btn-sm btn-icon-only text-light" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                          </a>
+                                          <div class="dropdown-menu dropdown-menu-right dropdown-menu-arrow">
+                                            <a class="dropdown-item" href="/free_invoice/invoice_view.html?invoice_id={{ invoice_summary.invoice_id }}" >View Invoice</a>
+                                            <a class="dropdown-item" href="/free_invoice/invoices_detail.html?customer_id={{ customer.id }}&&invoice_id={{ invoice_summary.invoice_id }}">Edit Invoice</a>
+                                          </div>
+                                        </div>
+                                      </td>
+                              </tr>
+
+                              {% empty %}
+                              <tr>
+                                <td colspan="9" class="text-center">No Free Invoice found.</td>
+                              </tr>
+
+                              {% endfor %}
+                              
+                              <tr>
+                  
+                                  <td class="left strong"></td>
+                                  <td class="left strong"></td>
+
+                                  <td class="left strong"></td>
+                                  <td class="left strong"></td>
+                                  <td class="right strong"><strong>Total </strong> </td>
+                                  <td class="right"><strong>{{ free_total_debit }} AED</strong></td>
+                                  <td class="right"><strong>{{ free_total_credit }} AED</strong></td>
+                                  <td class="left strong"></td>
+
+                                
+                                  <td class="left strong"></td>
+                              </tr>
+
+                              </tbody>
+                              </table>
+                              </div>
+                              <div class="row">
+                              <div class="col-lg-4 col-sm-5">
+                              </div>
+                              <div class="col-lg-4 col-sm-5 ml-auto">
+                              </div>
+                              </div>
+                              </div>
+                              <div class="card-footer bg-white">
+                              </div>
+
+                                      </div>
+                        </div>
 
 
                         <div class="card">
