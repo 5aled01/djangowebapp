@@ -90,14 +90,14 @@ class InvoiceImage(models.Model):
 class Transaction(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='transactions')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    rest = models.DecimalField(max_digits=10, decimal_places=2)
+    rest = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))
     date = models.DateTimeField(default=timezone.now)
 
 class FreeTransaction(models.Model):
     invoice = models.ForeignKey(FreeInvoice, on_delete=models.CASCADE, related_name='freetransactions')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
-    rest = models.DecimalField(max_digits=10, decimal_places=2)
+    rest = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     transaction_type = models.CharField(max_length=10, choices=(('debit', 'Debit'), ('credit', 'Credit')))
     date = models.DateTimeField(default=timezone.now)
 

@@ -483,23 +483,7 @@
   const textInput = document.getElementById("textInput");
   const tInput = document.getElementById("tInput");
 
-  // Function to update the state of the text input based on the selected option
-  function updateTextInputState() {
-    const selectedValue = selectInput.value;
-    if (selectedValue === "credit") {
-      textInput.disabled = false; // Enable the text input
-    } else {
-      textInput.disabled = true;
-      textInput.value = tInput.value
-      // Disable the text input
-    }
-  }
 
-  // Listen for changes on the select input
-  selectInput.addEventListener("change", updateTextInputState);
-
-  // Initialize the state of the text input based on the initial select value
-  updateTextInputState();
 
 
   </script>

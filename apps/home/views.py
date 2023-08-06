@@ -1039,7 +1039,8 @@ def delete_invoice(request):
             from_page = request.session.get('delete_invoice_from_page')
             if from_page == 'customer_detail':
                 # Redirect to the customer_detail page with the appropriate customer_id
-                return redirect('customer_detail', customer_id=customer_id)
+                context['customer_id'] = customer_id
+                return redirect('home/customer_detail.html', context)
             else:
                 return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
@@ -1049,6 +1050,69 @@ def delete_invoice(request):
         messages.error(request, 'Invalid request')
 
     return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
+
+def delete_free_invoice(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        try:
+            invoice = FreeInvoice.objects.get(id=invoice_id)
+            customer = invoice.customer
+            invoice.delete()
+            messages.success(request, 'Invoice deleted successfully')
+
+        except FreeInvoice.DoesNotExist:
+            messages.error(request, 'Invoice not found')
+    else:
+        messages.error(request, 'Invalid request')
+
+    #request.GET['customer_id'] = customer.id
+    context['customer_id'] = customer.id
+    #print('customer.id', customer.id)
+    return redirect('home/customer_detail.html', context)  # Replace 'invoices' with the appropriate URL name of the invoices page
+
+
+def cencel_freetransanction(request):
+    if request.method == 'POST':
+
+        invoice_id = request.POST.get('invoice_id')
+        customer_id = request.POST.get('customer_id')
+
+        try:
+            invoice = FreeInvoice.objects.get(id=invoice_id)
+            transaction = FreeTransaction.objects.get(invoice=invoice)
+
+            customer = Customer.objects.get(id=customer_id)
+
+            invoice.status = 'Unpaid'
+            invoice.save()
+
+            if transaction.transaction_type == 'debit':  
+                customer.balance =  customer.balance - transaction.amount
+            else:
+
+                print('total: ', transaction.rest)
+                print('amount paid: ',transaction.amount)
+                x = transaction.rest - transaction.amount
+                print('balance ols: ',customer.balance )
+                customer.balance =  customer.balance + x
+                print('diff paid: ', x)
+                print('balance now: ',customer.balance )
+            customer.save()
+            transaction.delete()
+
+            messages.success(request, 'Transaction Cencel successfully')
+
+        except Invoice.DoesNotExist:
+            messages.error(request, 'Transaction not found')
+    else:
+        messages.error(request, 'Transaction request')
+
+    context['customer_id'] = customer_id
+    #print('customer.id', customer.id)
+    return redirect('home/customer_detail.html', context)  
+
+
+
 
 
 def cencel_transanction(request):
@@ -1060,7 +1124,25 @@ def cencel_transanction(request):
         try:
             invoice = Invoice.objects.get(id=invoice_id)
             transaction = Transaction.objects.get(invoice=invoice)
+
+            customer = Customer.objects.get(id=customer_id)
+
             invoice.status = 'Unpaid'
+            invoice.save()
+
+            if transaction.transaction_type == 'debit':  
+              customer.balance =  customer.balance - transaction.amount
+            else:
+                print('total: ', transaction.rest)
+                print('amount paid: ',transaction.amount)
+                x = transaction.rest - transaction.amount
+                print('balance ols: ',customer.balance )
+                customer.balance =  customer.balance + x
+                print('diff paid: ', x)
+                print('balance now: ',customer.balance )
+              
+            customer.save()
+
             invoice.save()
             transaction.delete()
 
@@ -1136,15 +1218,16 @@ def change_free_invoice_status(request):
         customer = Customer.objects.get(id=customer_id)
         balance = float(customer.balance)
         
-        dif = amount - totalprice
+        if option == 'credit':
+            dif = amount - totalprice 
+            balance = balance + dif
+        else:
+            balance =  amount - balance
 
-        balance = balance + dif
-        
         customer.balance = balance
 
         print("amount :", amount)
         print("totalprice :", totalprice)
-        print("dif :", dif)
         print("balance :", balance)
  
 
@@ -1154,7 +1237,7 @@ def change_free_invoice_status(request):
             FreeTransaction.objects.create(
                 invoice=invoice,
                 amount=amount,
-                rest=balance,
+                rest=totalprice,
                 transaction_type=option,
                 date=timezone.now(),
             )
@@ -1195,9 +1278,11 @@ def change_invoice_status(request):
         customer = Customer.objects.get(id=customer_id)
         balance = float(customer.balance)
         
-        dif = amount - totalprice
-
-        balance = balance + dif
+        if option == 'credit':
+            dif = amount - totalprice 
+            balance = balance + dif
+        else:
+            balance = amount - balance
         
         customer.balance = balance
 
@@ -1213,7 +1298,7 @@ def change_invoice_status(request):
             Transaction.objects.create(
                 invoice=invoice,
                 amount=amount,
-                rest=balance,
+                rest=totalprice,
                 transaction_type=option,
                 date=timezone.now(),
             )
