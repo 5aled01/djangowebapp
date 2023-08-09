@@ -19,6 +19,7 @@ from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import plotly.graph_objects as go
 import plotly.io as pio
 from .forms import CustomerForm, ContainerForm
+import xhtml2pdf.pisa as pisa
 
 import uuid
 from django.core.paginator import Paginator
@@ -1327,9 +1328,10 @@ def change_invoice_status(request):
 
 
 
-def generate_pdf(request):
-    
 
+
+
+def generate_pdf(request):
     if request.method == 'POST':
         invoice_id = request.POST.get('invoice_id')
         print(invoice_id)
@@ -1338,7 +1340,7 @@ def generate_pdf(request):
         invoice_summaries = []
         context = {}
 
-        container = invoice.containers.first() 
+        container = invoice.containers.first()
 
         if container:
             container_data = {
@@ -1350,10 +1352,8 @@ def generate_pdf(request):
                 'invoice_id': invoice.id,
             }
 
-        #print("containers", container_data)
-        # Get all items related to the invoice
         items = invoice.items.all()
-            
+
         context['invoice_summaries'] = invoice_summaries
         context['container_data'] = container_data
         context['invoice'] = invoice
@@ -1361,68 +1361,68 @@ def generate_pdf(request):
         context['totalpack'] = items.aggregate(s=Sum("quantity"))["s"]
         context['totalcbm'] = items.aggregate(s=Sum("CBM"))["s"]
         context['totalprice'] = items.aggregate(s=Sum("price"))["s"]
-        # Your dynamic data (replace this with your data logic)
-
-        # Path to the directory containing the HTML template and the image
 
         image_file_logo = "apps/static/assets/img/theme/tet.png"
         image_file_bankili = "apps/static/assets/img/theme/bankili.png"
 
         image_logo = image_file_logo
-
         image_bankili = image_file_bankili
-
-        # Render the template with dynamic data and image data
-        template = 'home/invoice_style_pdf.html'
-
-        #html_template = loader.get_template('invoice_style_pdf.html')
 
         context['image_logo'] = image_logo
         context['image_bankili'] = image_bankili
-        context['items'] = items
 
-        if len(items) >= 9:
+        size_items = len(items)
 
-            template = loader.get_template('home/invoice_no_foot.html') 
-            context['items'] = items[:10] 
-            html = template.render(context) 
-            result1 = BytesIO()
-            pdf1 = pisa.pisaDocument(StringIO(html), dest=result1)
+        if size_items <= 8:
+            template = get_template('home/invoice_style_pdf.html')
+            context['items'] = items
+            html = template.render(context)
+            result = BytesIO()
+            pisa.pisaDocument(StringIO(html), dest=result)
 
-            template = get_template('home/second_invoice_style_pdf.html') 
-            context['items'] = items[10:] 
-            html = template.render(context) 
-            result2 = BytesIO()
-            pdf1 = pisa.pisaDocument(StringIO(html), dest=result2)
-
-            # Reset the file pointers of the generated PDFs
-            result1.seek(0)
-            result2.seek(0)
-
-            # Create a PDF merger object
-            pdf_merger = PyPDF2.PdfMerger()
-            pdf_merger.append(result1)
-            pdf_merger.append(result2)
-            merged_pdf_buffer = BytesIO()
-            pdf_merger.write(merged_pdf_buffer)
-            merged_pdf_buffer.seek(0)
-            print("too")
-
-            response =  HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf') 
+            response = HttpResponse(result.getvalue(), content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
         else:
-            template = get_template(template) 
-            html = template.render(context) 
-            result = BytesIO()
-            pisa.pisaDocument(StringIO(html), dest=result) 
-                
+            pdf_merger = PyPDF2.PdfMerger()
 
-            response =  HttpResponse(result.getvalue(), content_type='application/pdf', ) 
+            template = get_template('home/invoice_no_foot.html')
+
+            for i in range(0, size_items, 12):
+                if i == 0:
+                    template = get_template('home/invoice_no_foot.html')
+                else:
+                    template = get_template('home/second_invoice_style_pdf.html')
+
+                if size_items -  i > 12:
+                    context['items'] = items[i:i+12]
+                    html = template.render(context)
+                    pdf_buffer = BytesIO()
+                    pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
+                    pdf_buffer.seek(0)
+                    pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+
+            remaining_items = size_items % 12
+            if remaining_items > 0:
+                if remaining_items <= 12:
+                    template = get_template('home/final_invoice_style_pdf.html')
+                    context['items'] = items[size_items - remaining_items:]
+                    html = template.render(context)
+                    pdf_buffer = BytesIO()
+                    pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
+                    pdf_buffer.seek(0)
+                    pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+
+            merged_pdf_buffer = BytesIO()
+            pdf_merger.write(merged_pdf_buffer)
+            merged_pdf_buffer.seek(0)
+
+            response = HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf')
             response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
             return response
-        
+
     return HttpResponse('Errors')
+
 
 
 def generate_free_pdf(request):
