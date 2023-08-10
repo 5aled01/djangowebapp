@@ -1388,23 +1388,23 @@ def generate_pdf(request):
 
             template = get_template('home/invoice_no_foot.html')
 
-            for i in range(0, size_items, 12):
+            for i in range(0, size_items, 8):
                 if i == 0:
                     template = get_template('home/invoice_no_foot.html')
                 else:
                     template = get_template('home/second_invoice_style_pdf.html')
 
-                if size_items -  i > 12:
-                    context['items'] = items[i:i+12]
+                if size_items -  i > 8:
+                    context['items'] = items[i:i+8]
                     html = template.render(context)
                     pdf_buffer = BytesIO()
                     pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
                     pdf_buffer.seek(0)
                     pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
 
-            remaining_items = size_items % 12
+            remaining_items = size_items % 8
             if remaining_items > 0:
-                if remaining_items <= 12:
+                if remaining_items <= 8:
                     template = get_template('home/final_invoice_style_pdf.html')
                     context['items'] = items[size_items - remaining_items:]
                     html = template.render(context)
