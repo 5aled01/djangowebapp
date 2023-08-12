@@ -185,6 +185,17 @@
       text-align: left;
     }
 
+
+    .footer {
+        position: fixed;
+        bottom: -100;
+        width: 100%;
+        text-align: center;
+        background-color: #f0f0f0; /* Set the background color for the footer */
+        padding: 5px 0; /* Add some padding for better spacing */
+    }
+
+
     /* Update the styles for #company and #project */
     #company,
     #project {
@@ -315,7 +326,12 @@
       
       
     </main> 
-    <pdf:pagenumber>
+    <!-- ... (rest of your template) ... -->
+
+    <div style="position: fixed; bottom: 40px; width: 100%; text-align: center;">
+      <span>{{ PAGE_NUM }}</span>
+  </div>
+
    
   </body>
   </html>

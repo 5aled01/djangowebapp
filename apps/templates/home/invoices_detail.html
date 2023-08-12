@@ -185,8 +185,7 @@
 
                     <tr class="default-row">
                       <td>
-                        <a class="cut">-</a
-                        ><input type="text" class="Description-input" value="{{ item.item }}" required />
+                        <a class="cut">-</a><input type="text" class="Description-input" value="{{ item.item }}" required />
                       </td>
   
                       <td>
@@ -207,8 +206,12 @@
                       </td>
                       <td class="cbm-input">{{ item.CBM }}</td>
                       <td>
-                        <input type="number" class="rate-input"  value="650" required />
-                      </td>
+                        {% if forloop.counter > 1 %}
+                          <input type="hidden" class="rate-input"   id="rate-input-01" value="{{ item.rate }}" required />
+                        {% else %}
+                        <input type="number" class="rate-input"   id="rate-input-01" value="{{ item.rate }}" required />
+                        {% endif %}
+                        </td>
                       <td class="price-input"  >{{ item.price }}</td>
                     </tr>
   
@@ -218,8 +221,8 @@
 
                   <tr class="default-row">
                     <td>
-                      <a class="cut">-</a
-                      ><input type="text" class="Description-input" required />
+                      <a class="cut">-</a>
+                      <input type="text" class="Description-input" required />
                     </td>
 
                     <td>
@@ -240,7 +243,7 @@
                     </td>
                     <td class="cbm-input"></td>
                     <td>
-                      <input type="number" class="rate-input"  value="650" required />
+                      <input type="number" class="rate-input"  oninput="copyValue()"  id="rate-input-01"  value="650" required />
                     </td>
                     <td class="price-input"></td>
                   </tr>
@@ -307,15 +310,21 @@
                   </td>
                 </tr>
               </table>
-            </form>
 
+             
+            </form>
             
 
           </article>
+
         </div>
+
       </div>
+
     </div>
   </div>
+
+
 </div>
 
 {% include "includes/footer.html" %} {% endblock content %}
@@ -335,6 +344,22 @@
     month: "long",
     day: "numeric",
   };
+
+  var conditionMet = "{{ invoice_in }}"; // Replace with your actual Django variable
+
+  function copyValue() {
+  var input1Value = document.getElementById("rate-input-01").value;
+  var copyInputs = document.querySelectorAll(".rate-input");
+  
+  if (conditionMet === "invoice_in") {
+    return; // Exit the function if the condition is true
+  }
+
+  for (var i = 0; i < copyInputs.length; i++) {
+    copyInputs[i].value = input1Value;
+  }
+
+}
 
   // Format the date as a string in English
   const formattedDate = currentDate.toLocaleDateString("en-US", options);
@@ -356,34 +381,36 @@
     });
 
     itemList.addEventListener("click", function (event) {
-      if (event.target.classList.contains("cut")) {
-        const row = event.target.parentNode.parentNode;
-        if (!row.classList.contains("default-row")) {
-          itemList.removeChild(row);
-          calculateTotals();
-        }
+  if (event.target.classList.contains("cut")) {
+    const row = event.target.closest(".default-row"); // Use the class "default-row" to identify the row
+    if (row) {
+      const rowCount = itemList.querySelectorAll(".default-row").length;
+      if (rowCount > 1) { // Check if there's more than one row
+        row.parentNode.removeChild(row);
+        calculateTotals();
       }
-    });
+    }
+  }
+});
+
+
+
 
     itemList.addEventListener("input", function (event) {
-      const row = event.target.parentNode.parentNode;
+    rows = document.querySelectorAll(".default-row"); // Assuming each row has a class "item-row"
+    rows.forEach(row => {
       const quantityInput = row.querySelector(".quantity-input");
-
       const manifestInput = document.getElementById("manifest");
       const costInput = document.getElementById("invoice_id");
-
       const augInput = document.getElementById("aug");
-
       const lengthInput = row.querySelector(".length-input");
       const widthInput = row.querySelector(".width-input");
       const heightInput = row.querySelector(".height-input");
       const cbmInput = row.querySelector(".cbm-input");
       const priceInput = row.querySelector(".price-input");
-      const rateInput = row.querySelector(".rate-input");
-      //const id_customer = row.querySelector(".customer-input");
-      const id_customer = row.querySelector(".customer-input")?.value ?? row.querySelector(".rate-input");
-      //const invoice_id = row.querySelector(".invoice_id-input");
-      const invoice_id = row.querySelector(".invoice_id-input")?.value ?? row.querySelector(".rate-input");
+      const rateInput =  document.getElementById("rate-input-01");
+      const id_customer = row.querySelector(".customer-input")?.value ?? document.getElementById("rate-input-01");
+      const invoice_id = row.querySelector(".invoice_id-input")?.value ?? document.getElementById("rate-input-01");
 
       if (
         event.target === quantityInput ||
@@ -403,13 +430,10 @@
         const aug = augInput.value || 0;
         const manifest = manifestInput.value || 0;
 
-        console.log("aug", aug);
-        console.log("manifest", manifest);
-
         var cbm = (length * width * height * quantity) / 1000000;
         cbm = cbm + (cbm * aug) / 100;
 
-        const price = cbm * rate ;
+        const price = cbm * rate;
 
         cbmInput.textContent = cbm.toFixed(2);
         priceInput.textContent = price.toFixed(2);
@@ -417,18 +441,22 @@
         calculateTotals();
       }
     });
+  });
+
+
 
     function generateTableRow() {
       const row = document.createElement("tr");
+      row.classList.add("default-row"); 
       row.innerHTML =
-        `<td><a class="cut">-</a><input type="text" class="Description-input required"></td>` +
+        `<td><a class="cut">-</a><input type="text" class="Description-input" required></td>` +
         '<td><input type="text" class="source-input" required></td>' +
         '<td><input type="number" class="quantity-input" required></td>' +
         '<td><input type="number" class="length-input" required></td>' +
         '<td><input type="number" class="width-input" required></td>' +
         '<td><input type="number" class="height-input" required></td>' +
         `<td class="cbm-input"></td>` +
-        '<td><input type="number" class="rate-input"  value="650" required></td>' +
+        '<td><input type="hidden"  class="rate-input"  id="rate-input-01"  required></td>' +
         `<td class="price-input"></td>`;
 
       return row;
@@ -484,7 +512,7 @@
         const widthInput = row.querySelector(".width-input");
         const heightInput = row.querySelector(".height-input");
         const cbmInput = row.querySelector(".cbm-input");
-        const rateInput = row.querySelector(".rate-input");
+        const rateInput =  document.getElementById("rate-input-01");
         const priceInput = row.querySelector(".price-input");
         const customerInput = document.querySelector(".customer-input");
         //const invoice_inrInput = document.querySelector(".invoice_in-input");

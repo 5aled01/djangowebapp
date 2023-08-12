@@ -1339,7 +1339,8 @@ def generate_pdf(request):
 
         invoice_summaries = []
         context = {}
-
+        context['PAGE_NUM'] = 1
+        context['PAGES'] = 1
         container = invoice.containers.first()
 
         if container:
@@ -1386,8 +1387,6 @@ def generate_pdf(request):
         else:
             pdf_merger = PyPDF2.PdfMerger()
 
-            template = get_template('home/invoice_no_foot.html')
-
             for i in range(0, size_items, 8):
                 if i == 0:
                     template = get_template('home/invoice_no_foot.html')
@@ -1401,7 +1400,9 @@ def generate_pdf(request):
                     pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
                     pdf_buffer.seek(0)
                     pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
-
+                
+                context['PAGE_NUM'] += 1
+            context['PAGE_NUM'] -= 1
             remaining_items = size_items % 8
             if remaining_items > 0:
                 if remaining_items <= 8:
