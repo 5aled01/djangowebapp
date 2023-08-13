@@ -85,7 +85,13 @@ class InvoiceImage(models.Model):
     def __str__(self):
         return f"Image for Invoice #{self.invoice.id}"
     
+class FreeInvoiceImage(models.Model):
+    FreeInvoice = models.ForeignKey(FreeInvoice, on_delete=models.CASCADE)
+    image_data = models.BinaryField()
 
+    def __str__(self):
+        return f"Image for Invoice #{self.invoice.id}"
+    
 
 class Transaction(models.Model):
     invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='transactions')
@@ -116,3 +122,5 @@ class CustomerTransaction(models.Model):
         if not self.id or not self.pk:
             self.id = 'CT' + str(uuid.uuid4().fields[-1])[:6]
         super().save(*args, **kwargs)
+
+

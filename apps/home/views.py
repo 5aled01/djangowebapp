@@ -33,7 +33,7 @@ from django.urls import reverse
 from django.db.models import Sum, Q
 import json
 from django.utils.crypto import get_random_string
-from .models import Customer, Container, FreeInvoice, FreeItem, FreeTransaction, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
+from .models import Customer, Container, FreeInvoice, FreeInvoiceImage, FreeItem, FreeTransaction, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
 
 
 
@@ -58,7 +58,9 @@ def index(request):
     #Item.objects.all().update(rate=650.0)
     customer_count = Customer.objects.count()
     total_income = Transaction.objects.aggregate(total_income=Sum('amount'))['total_income'] or 0
-    total_expenses = Container.objects.aggregate(total=Sum('price'))['total'] or 0
+    total_expenses_invoices = Item.objects.filter(invoice__status='Unpaid').aggregate(total=Sum('price'))['total'] or 0
+    total_expenses_free_invoices = FreeItem.objects.filter(invoice__status='Unpaid').aggregate(total=Sum('price'))['total'] or 0
+    total_expenses = total_expenses_invoices + total_expenses_free_invoices
 
     three_days_ago = timezone.now() - timedelta(days=3)
 
@@ -1034,6 +1036,44 @@ def get_invoice_images(request):
             return JsonResponse([], safe=False)
 
     return JsonResponse({'message': 'Invalid request method'}, status=400)
+
+
+def save_free_images(request):
+    if request.method == 'POST':
+        FreeInvoice_id = request.POST.get('invoice_id')  # Get the invoice ID from the POST data
+        images = request.FILES.values()
+        saved_images = []
+
+        for image in images:
+            # Read the image file and get the byte data
+            image_data = image.read()
+
+            # Create and store the FreeInvoiceImage instance in the list
+            free_invoice_image = FreeInvoiceImage(image_data=image_data, FreeInvoice_id=FreeInvoice_id)
+            saved_images.append(free_invoice_image)
+
+        # Save all the FreeInvoiceImage instances
+        FreeInvoiceImage.objects.bulk_create(saved_images)
+
+        return JsonResponse({'message': 'Images saved successfully'})
+    return JsonResponse({'message': 'Invalid request method'}, status=400)
+
+
+
+def get_invoice_free_images(request):
+    if request.method == 'GET':
+        FreeInvoice_id = request.GET.get('invoice_id')  # Get the invoice ID from the query parameters
+
+        try:
+            images = FreeInvoiceImage.objects.filter(FreeInvoice_id=FreeInvoice_id)
+            image_data = [image.image_data for image in images]
+            image_urls = [f'data:image/jpeg;base64,{base64.b64encode(image).decode("utf-8")}' for image in image_data]
+            return JsonResponse(image_urls, safe=False)
+        except InvoiceImage.DoesNotExist:
+            return JsonResponse([], safe=False)
+
+    return JsonResponse({'message': 'Invalid request method'}, status=400)
+
 
 
 def delete_invoice(request):

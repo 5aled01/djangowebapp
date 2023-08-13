@@ -52,6 +52,8 @@ urlpatterns = [
     path('generate_transaction_pdf', views.generate_transaction_pdf, name='generate_transaction_pdf'),
 
     path('generate_free_pdf', views.generate_free_pdf, name='generate_free_pdf'),
+    path('save_free_images', views.save_free_images, name='save_free_images'),
+    path('get_invoice_free_images', views.get_invoice_free_images, name='get_invoice_free_images'),
 
     path('change_invoice_status', views.change_invoice_status, name='change_invoice_status'),
     path('change_free_invoice_status', views.change_free_invoice_status, name='change_free_invoice_status'),
