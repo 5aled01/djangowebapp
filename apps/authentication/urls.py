@@ -9,13 +9,16 @@ from django.conf.urls.static import static
 from core import settings
 from .views import login_view, register_user
 from . import views
+
 from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('login/', login_view, name="login"),
     #path('register/', register_user, name="register"),
     path('profile', views.edit_profile, name='edit_profile'),
-    path("logout/", LogoutView.as_view(), name="logout")
+    path("logout/", LogoutView.as_view(), name="logout"),
+    path('health/',views.health_check, name='health_check')
+
 ]
 if settings.DEBUG:  # new
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

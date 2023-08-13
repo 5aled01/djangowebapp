@@ -4,6 +4,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 
 # Create your views here.
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from .forms import LoginForm, ProfileForm, SignUpForm
@@ -13,6 +14,11 @@ from django.contrib.auth.models import User
 
 
 #User.objects.create_user(username='test', password='testtesttest', first_name='test', last_name = 'test', email = 'test@gmail.com')
+
+
+def health_check(request):
+    return HttpResponse("Health check passed", status=200)
+
 
 def login_view(request):
     form = LoginForm(request.POST or None)

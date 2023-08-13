@@ -45,6 +45,9 @@ from django.template import Context
 
 context = {}
 
+def health_check(request):
+    return HttpResponse("Health check passed", status=200)
+
 @login_required(login_url="/login/")
 def index(request):
 

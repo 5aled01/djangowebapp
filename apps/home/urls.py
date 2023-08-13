@@ -58,6 +58,8 @@ urlpatterns = [
 
     path('generate_pdf/', views.generate_pdf, name='generate_pdf'),
 
+    path('health/',views.health_check, name='health_check'),
+
     # Matches any html file
     re_path(r'^.*\.*', views.pages, name='pages'),
 
