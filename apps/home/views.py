@@ -8,6 +8,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 Copyright (c) 2019 - present AppSeed.us
 """
+import math
 import PyPDF2
 
 import base64
@@ -214,7 +215,9 @@ def pages(request):
                 free_total_rate += free_invoice_summarie['total_rate'] or 0
                 free_total_price += free_invoice_summarie['total_price'] or 0
                 free_invoice_summaries.append(free_invoice_summarie)
-
+            
+            
+            total_unpaid_prices = 0
             for invoice in invoices:
 
                 # Get all items related to the invoice
@@ -262,6 +265,10 @@ def pages(request):
                         total_debit += transaction.amount or 0
                     else:
                         total_credit += transaction.amount or 0
+
+                else:
+                    total_unpaid_prices += invoice_summary['total_price']
+
                 print('ok')        
 
                 total_quantity += invoice_summary['total_quantity'] or 0
@@ -282,13 +289,13 @@ def pages(request):
             context['total_quantity'] = total_quantity
             context['total_cbm'] = total_cbm
             context['total_price'] = total_price
-
+            context['total_unpaid_prices'] = total_unpaid_prices
             context['free_total_debit'] = free_total_debit
             context['free_total_credit'] = free_total_credit
             context['free_total_quantity'] = free_total_quantity
             context['free_total_cbm'] = free_total_rate
             context['free_total_price'] = free_total_price
-
+            
         if request.path == '/free_invoice/invoice_view.html':
             invoice_id = request.GET.get('invoice_id')
             invoice = get_object_or_404(FreeInvoice, id=invoice_id)
@@ -1327,8 +1334,10 @@ def change_invoice_status(request):
     #return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 
-
-
+from django.http import HttpResponse
+from django.template import loader
+import pypandoc
+import subprocess
 
 
 def generate_pdf(request):
@@ -1341,6 +1350,8 @@ def generate_pdf(request):
         context = {}
         context['PAGE_NUM'] = 1
         context['PAGES'] = 1
+        container_data = None  # Initialize container_data to None
+
         container = invoice.containers.first()
 
         if container:
@@ -1372,58 +1383,87 @@ def generate_pdf(request):
         context['image_logo'] = image_logo
         context['image_bankili'] = image_bankili
 
-        size_items = len(items)
+        total_items = items.count()
 
-        if size_items <= 8:
+        total_pages = 1  # Start with 1 page for up to 15 items
+        if total_items > 15:
+            num_additional_pages = math.ceil((total_items - 18) / 23)
+            total_pages = 1 + num_additional_pages + 1  # 1 for initial page, num_additional_pages for middle pages, 1 for final page
+        
+        context['PAGES'] = total_pages
+
+        if total_items <= 15:
+
             template = get_template('home/invoice_style_pdf.html')
             context['items'] = items
             html = template.render(context)
             result = BytesIO()
             pisa.pisaDocument(StringIO(html), dest=result)
 
+            name = 'attachment; filename="' + invoice.customer.name + '_' + invoice.id + '.pdf"'
+
             response = HttpResponse(result.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            response['Content-Disposition'] = name
             return response
         else:
+
             pdf_merger = PyPDF2.PdfMerger()
+            template = get_template('home/invoice_no_foot.html')
 
-            for i in range(0, size_items, 8):
-                if i == 0:
-                    template = get_template('home/invoice_no_foot.html')
-                else:
-                    template = get_template('home/second_invoice_style_pdf.html')
+            current_items = items[:18]
+            context['items'] = current_items
 
-                if size_items -  i > 8:
-                    context['items'] = items[i:i+8]
-                    html = template.render(context)
-                    pdf_buffer = BytesIO()
-                    pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
-                    pdf_buffer.seek(0)
-                    pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+            html = template.render(context)
+            pdf_buffer = BytesIO()
+            pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
+            pdf_buffer.seek(0)
+            pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+            context['PAGE_NUM'] += 1
+
+            items = items[18:]  # Remove the first 15 items from the queryset
+            total_items -= 18
+
+            template = get_template('home/second_invoice_style_pdf.html')
+            while total_items >= 20:    
                 
+                current_items = items[:23]
+
+                context['items'] = current_items
+
+                html = template.render(context)
+                pdf_buffer = BytesIO()
+                pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
+                pdf_buffer.seek(0)
+                pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
                 context['PAGE_NUM'] += 1
-            context['PAGE_NUM'] -= 1
-            remaining_items = size_items % 8
-            if remaining_items > 0:
-                if remaining_items <= 8:
-                    template = get_template('home/final_invoice_style_pdf.html')
-                    context['items'] = items[size_items - remaining_items:]
-                    html = template.render(context)
-                    pdf_buffer = BytesIO()
-                    pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
-                    pdf_buffer.seek(0)
-                    pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+
+                items = items[23:] 
+                total_items -= 23
+
+            remaining_items = items
+            template = get_template('home/final_invoice_style_pdf.html')
+
+
+            context['items'] = remaining_items
+
+            html = template.render(context)
+            pdf_buffer = BytesIO()
+            pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
+            pdf_buffer.seek(0)
+            pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+
 
             merged_pdf_buffer = BytesIO()
             pdf_merger.write(merged_pdf_buffer)
             merged_pdf_buffer.seek(0)
 
+            name = 'attachment; filename="' + invoice.customer.name + '_' + invoice.id + '.pdf"'
+
             response = HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf')
-            response['Content-Disposition'] = 'attachment; filename="invoice.pdf"'
+            response['Content-Disposition'] = name
             return response
 
     return HttpResponse('Errors')
-
 
 
 def generate_free_pdf(request):

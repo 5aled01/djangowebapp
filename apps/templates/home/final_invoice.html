@@ -154,7 +154,7 @@
                           Total CBM
                         </th>
                         <td class="border-0 text-end">
-                          {{ totalcbm }}
+                          {{ totalcbm|floatformat:2 }}
                         </td>
                       </tr>
 
@@ -163,7 +163,7 @@
                           Grand Total
                         </th>
                         <td class="border-0 text-end">
-                          <strong><p class="m-0 fw-semibold">{{totalprice}} AED</p></strong>
+                          <strong><p class="m-0 fw-semibold">{{totalprice|floatformat:2}} AED</p></strong>
                         </td>
                       </tr>
                     </tbody>

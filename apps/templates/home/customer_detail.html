@@ -161,9 +161,18 @@
                         <div class="card">
                           <div class="card-body">
                             
+                            {% if total_unpaid_prices > 0 %}
+                                    
+                                        The total price for unpaid bills is: 
+                                        <span style="color: rgb(201, 107, 107);">
+                                          {{ total_unpaid_prices }} AED
+                                      </span>
+                                      {% endif %} 
                             
                               <div class="card-header p-4">
-                              <div class="float-left"> <h3 class="mb-0">List of invoices </h3>
+                              <div class="float-left"> <h3 class="mb-0">List of invoices 
+
+                              </h3>
                                 <a href="/invoices_detail.html?customer_id={{ customer.id }}">+</a>
                               </div>
                               
@@ -263,6 +272,9 @@
                                   {% endif %}
                                   <td class="left strong"></td>
                               </tr>
+
+                          
+                              
 
                               </tbody>
                               </table>

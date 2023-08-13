@@ -6,6 +6,17 @@
     <head>
         <style> 
 
+    @page{
+            size: A3;
+            margin: 1cm;
+
+      @frame footer_frame {           /* Another static Frame */
+        -pdf-frame-content: footer_content;
+        left: 400pt; top: 1170pt; height: 20pt;
+      
+    }
+    }
+
         </style>
         <style>
            @font-face {font-family: markazi; src: url('apps/static/assets/fonts/arabic_02.ttf')}
@@ -328,10 +339,9 @@
     </main> 
     <!-- ... (rest of your template) ... -->
 
-    <div style="position: fixed; bottom: 40px; width: 100%; text-align: center;">
-      <span>{{ PAGE_NUM }}</span>
-  </div>
-
+    
+  
+  <div id="footer_content"> {{ PAGE_NUM }} </div>
    
   </body>
   </html>
