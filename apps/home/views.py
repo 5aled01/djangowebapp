@@ -1337,11 +1337,6 @@ def change_invoice_status(request):
     #return redirect('invoices')  # Replace 'invoices' with the appropriate URL name of the invoices page
 
 
-from django.http import HttpResponse
-from django.template import loader
-import pypandoc
-import subprocess
-
 
 def generate_pdf(request):
     if request.method == 'POST':
