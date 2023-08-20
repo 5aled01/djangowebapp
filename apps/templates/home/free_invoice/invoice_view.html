@@ -351,49 +351,68 @@
 
   });
 
-    saveImagesBtn.addEventListener('click', () => {
+  saveImagesBtn.addEventListener('click', () => {
+  saveImagesBtn.disabled = true;
+  savedCount = 0;
+  $("#loading-spinner").removeClass("d-none");
 
-      saveImagesBtn.disabled = true;
+  const formData = new FormData();
+  formData.append('invoice_id', invoiceId);
 
-      $("#loading-spinner").removeClass("d-none");
+  for (let i = 0; i < selectedFiles.length; i++) {
+    const key = `image_${i + 1}`;
+    const file = selectedFiles[i];
+    formData.append(key, file, file.name);
+  }
 
-      const formData = new FormData();
-      formData.append('invoice_id', invoiceId);
+  const totalImages = selectedFiles.length;
 
-      for (let i = 0; i < selectedFiles.length; i++) {
-        const key = `image_${i + 1}`;
-        const file = selectedFiles[i];
-        formData.append(key, file, file.name);
+  fetch('/save_free_images', {
+    method: 'POST',
+    headers: {
+      'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': csrfToken,
+    },
+    body: formData,
+  })
+    .then((response) => {
+      if (response.ok) {
+        console.log('Image saved successfully');
+        savedCount++;
+
+        if (savedCount === totalImages) {
+          console.log('All images saved successfully');
+          $("#loading-spinner").addClass("d-none");
+          showSuccessMessage();
+
+          // Add the newly saved images to the DOM
+          selectedFiles.forEach(file => {
+            addSavedImage(URL.createObjectURL(file));
+          });
+
+          // Clear the selectedFiles array
+          selectedFiles = [];
+
+          // Re-enable the Save Images button
+          saveImagesBtn.disabled = false;
+        }
+      } else {
+        console.error('Error:', response.statusText);
+      }
+    })
+    .catch((error) => {
+      console.error('Error:', error);
+    })
+    .finally(() => {
+      // Re-enable the Save Images button in case of an error
+      if (savedCount !== totalImages) {
+        saveImagesBtn.disabled = false;
       }
 
-      fetch('/save_free_images', {
-        method: 'POST',
-        headers: {
-          'X-Requested-With': 'XMLHttpRequest',
-          'X-CSRFToken': csrfToken,
-        },
-        body: formData,
-      })
-        .then((response) => {
-          if (response.ok) {
-            console.log('Images saved successfully');
-            savedCount++; // Increment the savedCount variable
-            if (savedCount === selectedFiles.length) {
-              console.log('All images saved successfully');
-              saveImagesBtn.disabled = true;
-              $("#loading-spinner").addClass("d-none");
-
-              displayInvoiceImages(); // Call the function to display the saved images
-              showSuccessMessage();
-            }
-          } else {
-            console.error('Error:', response.statusText);
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-        });
+      $("#loading-spinner").addClass("d-none");
+      savedCount = 0;
     });
+});
     function deleteInvoice() {
       const confirmDelete = confirm('Are you sure you want to delete this invoice?');
       if (confirmDelete) {
@@ -443,14 +462,46 @@
     window.addEventListener('DOMContentLoaded', displayInvoiceImages);
 
     function enlargeImage(imageElement) {
-      imageElement.classList.toggle('enlarged');
-    }
+    const modal = document.getElementById('image-modal');
+    const enlargedImage = document.getElementById('enlarged-image');
+
+    // Set the source of the enlarged image to the clicked image's source
+    enlargedImage.src = imageElement.src;
+
+    // Show the modal
+    $(modal).modal('show');
+  }
+
+  // Modify the loop where you create image elements
+  for (let img of images) {
+    const imageElement = document.createElement('img');
+    imageElement.src = img.image.url;
+    imageElement.classList.add('imported-image');
+    imageElement.width = 120;
+
+    imageElement.addEventListener('click', function() {
+      enlargeImage(this);
+    });
+
+    imageContainer.appendChild(imageElement);
+  }
 
   const selectInput = document.getElementById("selectInput");
   const textInput = document.getElementById("textInput");
   const tInput = document.getElementById("tInput");
 
   </script>
+
+
+<div id="image-modal" class="modal fade" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+        <img id="enlarged-image" src="" alt="Enlarged Image" class="img-fluid">
+      </div>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
