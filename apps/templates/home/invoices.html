@@ -3,7 +3,9 @@
 {% block title %}Invoices{% endblock title %}
 
 {% block content %}
-
+<style>
+  
+</style>
   <div class="header bg-primary pb-6">
     <div class="container-fluid">
       <div class="header-body">
@@ -17,7 +19,7 @@
             </nav>
 
              <!-- Search form -->
-             <form class="navbar-search navbar-search-light form-inline mr-sm-3" id="navbar-search-main" action="/invoices" method="get">
+             <form class="navbar-search-light form-inline mr-sm-3" id="navbar-search-main" action="/invoices" method="get">
               <div class="input-group input-group-alternative input-group-merge rounded">
                 <input class="form-control rounded-right" placeholder="Search..." type="text" name="search" value="{{ search_query }}">
                 <div class="input-group-append">

@@ -22,6 +22,51 @@
 
   <script src="/static/assets/js/argon.js?v=1.2.0"></script>
 
+  <style>
+    /* Style for the chatbot container */
+    .chatbot-container {
+      position: fixed;
+      bottom: 40%; /* Adjust this value to change the vertical position */
+      left: 20px; /* Adjust this value to change the horizontal position (aligned to the left) */
+      width: 180px; /* Adjust the width as needed */
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 5%;
+    }
+
+    /* Style for the chat messages container inside the chatbot */
+    .chat-messages {
+      max-height: 300px; /* Adjust the maximum height for overflow scrolling */
+      overflow-y: auto;
+    }
+
+    /* Style for the chat input field and send button */
+    .chat-input {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+    }
+
+    .chat-input input[type="text"] {
+      width: 110px;
+      flex: 1;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .chat-input button {
+      white-space: 5px;
+      background-color:#5e72e4;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
 
   <style type="text/css">
     body {
@@ -67,6 +112,19 @@
 <body>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css"
     integrity="sha256-2XFplPlrFClt0bIdPgpz8H7ojnk10H69xRqd9+uTShA=" crossorigin="anonymous" />
+    <!-- Chatbot container -->
+    <div class="chatbot-container">
+      <h3>Comment</h3>
+      <div class="chat-messages">
+        <!-- Chat messages will be displayed here -->
+        <!-- You can use JavaScript to dynamically add messages -->
+      </div>
+      <div class="chat-input">
+        <input type="text"  placeholder="Type your message..." />
+    </div>
+    <button><i class="fas fa-paper-plane"></i></button> 
+  </div>
+
   <div class="container">
 
     <div class="row">
