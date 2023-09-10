@@ -33,7 +33,7 @@ from django.urls import reverse
 from django.db.models import Sum, Q
 import json
 from django.utils.crypto import get_random_string
-from .models import Customer, Container, FreeInvoice, FreeInvoiceImage, FreeItem, FreeTransaction, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
+from .models import Comment, Customer, Container, FreeInvoice, FreeInvoiceImage, FreeItem, FreeTransaction, InvoiceImage, Item, Invoice, Transaction, CustomerTransaction
 
 
 
@@ -1609,3 +1609,42 @@ def cancel_transanction_balance(request):
     context['customer_id'] = customer.id
 
     return redirect('home/customer_detail.html', customer_id=transaction.customer_id)
+
+
+def save_comment(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        comment_text = request.POST.get('comment_text')
+
+        if invoice_id and comment_text:
+            try:
+                # Check if a comment for the given invoice already exists
+                comment = Comment.objects.filter(invoice_id=invoice_id).first()
+
+                if comment:
+                    # If a comment exists, update it
+                    comment.text = comment_text
+                else:
+                    # If no comment exists, create a new one
+                    comment = Comment(invoice_id=invoice_id, text=comment_text)
+
+                comment.save()
+                return JsonResponse({'success': True, 'comment_text': comment.text})
+            except Exception as e:
+                return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+def get_invoice_comments(request):
+    if request.method == 'GET':
+        invoice_id = request.GET.get('invoice_id')
+
+        try:
+            comments = Comment.objects.filter(invoice_id=invoice_id)
+            comments_data = [{'text': comment.text} for comment in comments]
+            return JsonResponse({'comments': comments_data})
+        except Comment.DoesNotExist:
+            return JsonResponse({'comments': []})
+
+    return JsonResponse({'message': 'Invalid request method'}, status=400)
+

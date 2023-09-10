@@ -124,3 +124,12 @@ class CustomerTransaction(models.Model):
         super().save(*args, **kwargs)
 
 
+class Comment(models.Model):
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE, related_name='comments')
+    text = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Comment for Invoice #{self.invoice.id}'
+
+

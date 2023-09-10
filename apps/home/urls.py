@@ -36,7 +36,8 @@ urlpatterns = [
 
     path('invoices_detail', views.invoices_detail, name='invoices_detail'),
 
-
+    path('get_invoice_comments/', views.get_invoice_comments, name='get_invoice_comments'),
+    path('save_comment/', views.save_comment, name='save_comment'),
     path('invoice_save', views.Invoice_save, name='invoice_save'),
     path('invoices', views.invoices, name='invoices'),
     path('save_images', views.save_images, name='save_images'),
