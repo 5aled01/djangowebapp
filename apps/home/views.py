@@ -133,7 +133,7 @@ def pages(request):
                     'name', 'phone_number', 'brand', 'partner')).filter(search=search_query)
 
             else:
-                customers = Customer.objects.all()
+                customers = Customer.objects.all().order_by('name')
 
             paginator = Paginator(customers, per_page=20)
             page_number = request.GET.get('page')
@@ -686,7 +686,7 @@ def add_customer(request):
     else:
         form = CustomerForm()
 
-    customers = Customer.objects.all()
+    customers = Customer.objects.all().order_by('name')
     context = {'form': form, 'customers': customers}
     return render(request, 'home/customers.html', context)
 
