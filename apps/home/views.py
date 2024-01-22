@@ -116,7 +116,7 @@ def index(request):
 @login_required(login_url="/login/")
 def pages(request):
     # All resource paths end in .html.
-    # Pick out the html file name from the url. And load that template.
+    # Pick out the html file name from the url. And load that template. 
     try:
         
         load_template = request.path.split('/')[-1]
@@ -246,7 +246,7 @@ def pages(request):
 
                 except Container.MultipleObjectsReturned:
                     print("Multiple containers found for the given invoice.")
-
+                # INVO220653 DELETE FROM home_transaction WHERE id = 102;
                 # Assuming you have an invoice instance named 'invoice'
 
 
@@ -282,13 +282,13 @@ def pages(request):
                 invoice_summaries.append(invoice_summary)
 
 
-
+            print('ok 1')
             #invoice_summaries = sorted(invoice_summaries, key=lambda x: x['transaction_date'], reverse=True)
             invoice_summaries = sorted(invoice_summaries, key=lambda x: x['container_manifaist'])
-
+            print('ok 2')
             context['invoice_summaries'] = invoice_summaries
             context['free_invoice_summaries'] = free_invoice_summaries
-
+            print('ok 3')
             context['total_debit'] = total_debit
             context['total_credit'] = total_credit
             context['total_quantity'] = total_quantity
@@ -497,7 +497,8 @@ def pages(request):
         html_template = loader.get_template('home/page-404.html')
         return HttpResponse(html_template.render(context, request))
 
-    except:
+    except Exception as e:
+        print(e)
         html_template = loader.get_template('home/page-500.html')
         return HttpResponse(html_template.render(context, request))
 
@@ -641,7 +642,7 @@ def customer_detail(request, customer_id):
                     else:
                         total_credit += transaction.amount or 0
                 print('ok')        
-
+                
                 total_quantity += invoice_summary['total_quantity'] or 0
                 total_cbm += invoice_summary['total_cbm'] or 0
                 total_price += invoice_summary['total_price'] or 0
