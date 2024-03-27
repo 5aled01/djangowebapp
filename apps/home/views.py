@@ -1340,7 +1340,7 @@ def change_invoice_status(request):
 
         print("amount :", amount)
         print("totalprice :", totalprice)
-        print("dif :", dif)
+        #print("dif :", dif)
         print("balance :", balance)
  
 
