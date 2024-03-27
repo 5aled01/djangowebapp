@@ -1,18 +1,22 @@
+# Use the official Python 3.9.13 image as base
 FROM python:3.9.13
 
-COPY . .
-
-# set environment variables
+# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# install python dependencies
-RUN pip install --upgrade pip
+# Set working directory in the container
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# running migrations
-RUN python manage.py migrate
+# Copy the rest of the application code
+COPY . /app/
 
-# gunicorn
-CMD ["gunicorn", "--config", "gunicorn-cfg.py", "core.wsgi"]
+# Expose port 8000 to the outside world
+EXPOSE 8000
 
+# Run the Django app
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
