@@ -427,10 +427,20 @@ function downloadImages01() {
       // Set the download attribute to specify the filename
       link.download = 'image_' + index + '.jpg';
       
-      // Trigger a click event on the link to initiate the download
-      link.click();
+      // Append the link to the body
+      document.body.appendChild(link);
+      
+      // Wait for a short delay (50ms) before triggering the click event
+      setTimeout(function() {
+        // Trigger a click event on the link to initiate the download
+        link.click();
+        
+        // Remove the link from the DOM after download is initiated
+        document.body.removeChild(link);
+      }, 50);
     });
-  }
+}
+
 
                  // Inside the function sendMessage() for saving comments
 function sendMessage() {
