@@ -10,6 +10,7 @@ Copyright (c) 2019 - present AppSeed.us
 """
 import math
 import PyPDF2
+from PIL import Image
 
 import base64
 from django import template
@@ -21,6 +22,9 @@ import plotly.graph_objects as go
 import plotly.io as pio
 from .forms import CustomerForm, ContainerForm
 import xhtml2pdf.pisa as pisa
+
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
 
 import uuid
 from django.core.paginator import Paginator
@@ -1078,6 +1082,20 @@ def get_invoice_free_images(request):
 
 
 
+def delete_images(request):
+    if request.method == 'POST':
+        invoice_id = request.POST.get('invoice_id')
+        
+        invoice = get_object_or_404(Invoice, id=invoice_id)
+        InvoiceImage.objects.filter(invoice_id=invoice_id).delete()
+        
+        # Return HTTP response with status code 200
+        return HttpResponse('OK')
+
+        #return redirect('home/invoice_view.html', context)
+
+
+
 def delete_invoice(request):
     if request.method == 'POST':
         invoice_id = request.POST.get('invoice_id')
@@ -1217,9 +1235,6 @@ def change_balance(request):
 
         amount = float(request.POST.get('amount'))
         option = request.POST.get('option')
-
-        
-
 
         customer_id = request.POST.get('customer_id')
         customer = Customer.objects.get(id=customer_id)
@@ -1385,7 +1400,19 @@ def generate_pdf(request):
         invoice_id = request.POST.get('invoice_id')
         print(invoice_id)
         invoice = get_object_or_404(Invoice, id=invoice_id)
+        images = InvoiceImage.objects.filter(invoice_id=invoice_id)
+        image_data = [image.image_data for image in images]
+        image_urls = [f'data:image/jpeg;base64,{base64.b64encode(image).decode("utf-8")}' for image in image_data]
 
+
+        # Convert images to PDF
+        image_pdfs = []
+        for img_data in image_data:
+            img = Image.open(BytesIO(img_data))
+            pdf_bytes = BytesIO()
+            img.save(pdf_bytes, format='PDF')
+            image_pdfs.append(pdf_bytes)
+            
         invoice_summaries = []
         context = {}
         context['PAGE_NUM'] = 1
@@ -1433,20 +1460,29 @@ def generate_pdf(request):
         context['PAGES'] = total_pages
 
         if total_items <= 15:
-
             template = get_template('home/invoice_style_pdf.html')
             context['items'] = items
             html = template.render(context)
             result = BytesIO()
             pisa.pisaDocument(StringIO(html), dest=result)
+            
+            # Create a PdfMerger object and append the main PDF
+            pdf_merger = PyPDF2.PdfMerger()
+            pdf_merger.append(PyPDF2.PdfReader(result))
+
+            for image_pdf in image_pdfs:
+                pdf_merger.append(PyPDF2.PdfReader(image_pdf))
+
+            merged_pdf_buffer = BytesIO()
+            pdf_merger.write(merged_pdf_buffer)
+            merged_pdf_buffer.seek(0)
 
             name = 'attachment; filename="' + invoice.customer.name + '_' + invoice.id + '.pdf"'
 
-            response = HttpResponse(result.getvalue(), content_type='application/pdf')
+            response = HttpResponse(merged_pdf_buffer.getvalue(), content_type='application/pdf')
             response['Content-Disposition'] = name
             return response
         else:
-
             pdf_merger = PyPDF2.PdfMerger()
             template = get_template('home/invoice_no_foot.html')
 
@@ -1483,7 +1519,6 @@ def generate_pdf(request):
             remaining_items = items
             template = get_template('home/final_invoice_style_pdf.html')
 
-
             context['items'] = remaining_items
 
             html = template.render(context)
@@ -1491,6 +1526,13 @@ def generate_pdf(request):
             pisa.pisaDocument(StringIO(html), dest=pdf_buffer)
             pdf_buffer.seek(0)
             pdf_merger.append(PyPDF2.PdfReader(pdf_buffer))
+
+            # Add images to the PDF
+            print('add photo 1')
+            for image_pdf in image_pdfs:
+                pdf_merger.append(image_pdf)
+                
+            print('add photo 2')
 
 
             merged_pdf_buffer = BytesIO()

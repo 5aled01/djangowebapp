@@ -361,39 +361,66 @@
                   </form>
                 </div>
               </div>
-                  <div id="image-container" class="d-flex flex-wrap justify-content-center align-items-center">
-                    {% for img in images %}
-                      <img src="{{ img.image.url }}" class="imported-image" onclick="enlargeImage(this)" />
-                    {% endfor %}
-                    {% if images|length == 0 and selectedFiles|length == 0 %}
-                      <p>No images found.</p>
-                    {% endif %}
+
+            <br/>
+            <br/>
+            <br/>
+            <br/>
+              <div id="image-container" class="d-flex flex-wrap justify-content-center align-items-center">
+                {% for img in images %}
+                  <img src="{{ img.image.url }}" class="imported-image" onclick="enlargeImage(this)" />
+                {% endfor %}
+                {% if images|length == 0 and selectedFiles|length == 0 %}
+                  <p>No images found.</p>
+                {% endif %}
+              </div>
+              
+              <div id="success-message" style="display: none;" class="alert alert-success" role="alert">
+                Image saved successfully.
+              </div>
+              <input type="file" id="image-input" accept="image/*" style="display: none;" />
+              
+              <div id="invoice-details" data-invoice-id="{{ invoice.id }}"></div>
+              
+              {% csrf_token %}
+              
+              <div class="container mt-3">
+                <div class="row justify-content-center">
+                  <div class="col-12 col-sm-3 mb-2">
+                    <button id="add-image-btn" class="btn btn-primary btn-block">
+                      <i class="fa fa-plus"></i> Import Image
+                    </button>
+                  </div>
+                  <div class="col-12 col-sm-3 mb-2">
+                    <button id="download-button" class="btn btn-primary btn-block" onclick="downloadImages01()">
+                      <i class="fa fa-download"></i> Download Images
+                    </button>
                   </div>
 
-                  <div id="success-message" style="display: none;" class="alert alert-success" role="alert">
-                    Image saved successfully.
+                  <div class="col-12 col-sm-3 mb-2">
+                      
+
+                    <form id="delete-images-form" method="POST" style="display: inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="invoice_id" value="{{ invoice.id }}">
+                      <button type="button" id="delete-all-button" class="btn btn-outline-danger btn-block">
+                          <i class="fa fa-trash"></i> Delete Images
+                      </button>
+                  </form>
+
                   </div>
-                  <input type="file" id="image-input" accept="image/*" style="display: none;" />
-                  
-                  <div id="invoice-details" data-invoice-id="{{ invoice.id }}"></div>
-                  
-                  {% csrf_token %}
-                  
-                  <button id="add-image-btn" class="btn btn-primary me-1">
-                    <i class="fa fa-plus"></i> Import Image
-                  </button>
 
-                  <button id="download-button" class="btn btn-primary me-1" onclick="downloadImages01()"> <i class="fa fa-download"></i> Download Images</button>
-                  
-                  <button id="save-images-btn" class="btn btn-primary" disabled>
-                    Save Images
-
-                    <div id="loading-spinner" class="d-none">
-                      <i class="fas fa-circle-notch fa-spin"></i>
-                    </div>
-                    
-                  </button>
-                  <br>
+                  <div class="col-12 col-sm-3">
+                    <button id="save-images-btn" class="btn btn-primary btn-block" disabled>
+                      Save Images
+                      <div id="loading-spinner" class="spinner-border spinner-border-sm d-none" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              </div>
+                       <br>
                   <br>
                   <div class="chat-container">
                     <div class="chat-header" style="background-color: #fff; color: #333;">
@@ -412,6 +439,29 @@
                   <!-- Update your JavaScript to send the comment to the server -->
                 <script>
 
+
+document.getElementById('delete-all-button').addEventListener('click', function() {
+    if (confirm('Are you sure you want to delete ALL images?')) {
+        var formData = new FormData();
+        formData.append('invoice_id', "{{ invoice.id }}");
+        
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', "{% url 'delete_images' %}", true);
+        xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+        
+        xhr.onload = function() {
+            if (xhr.status === 200) {
+                // Reload the page after successful deletion
+                window.location.reload();
+            } else {
+                // Handle error if needed
+                console.error('Delete request failed with status ' + xhr.status);
+            }
+        };
+        
+        xhr.send(formData);
+    }
+});
 
 function downloadImages01() {
     var images = document.querySelectorAll('.imported-image');

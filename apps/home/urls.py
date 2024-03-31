@@ -42,7 +42,10 @@ urlpatterns = [
     path('invoices', views.invoices, name='invoices'),
     path('save_images', views.save_images, name='save_images'),
     path('get_invoice_images', views.get_invoice_images, name='get_invoice_images'),
+
     path('delete_invoice', views.delete_invoice, name='delete_invoice'),
+    
+    path('delete_images', views.delete_images, name='delete_images'),
 
     path('delete_free_invoice', views.delete_free_invoice, name='delete_free_invoice'),
 
