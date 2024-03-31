@@ -52,6 +52,8 @@
             <thead>
             <tr>
             <th>العلامة او اسم الزبون</th>
+            <th>رقم هاتف</th>
+
             <th class="right">عدد القطع</th>
             <th class="center">المقاس</th>
             <th class="right">الكلفة</th>
@@ -61,6 +63,8 @@
             <tr>
                 {% for invoice_summary in invoice_summaries %}
                     <td class="left strong">{{ invoice_summary.customer_name }}</td>
+                    <td class="left strong">{{ invoice_summary.customer_phone_number }}</td>
+
                     <td class="right">{{ invoice_summary.total_quantity }}</td>
                     <td class="center">{{ invoice_summary.total_cbm }}</td>
                     <td class="right">{{ invoice_summary.total_price }}</td>
@@ -69,6 +73,7 @@
             
             <tr>
 
+                <td class="left strong"></td>
                 <td class="left strong"></td>
                 <td class="right"><strong>{{ total_quantity }}</strong></td>
                 <td class="center"><strong>{{ total_cbm }}</strong></td>

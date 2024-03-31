@@ -251,7 +251,13 @@
         <div><span>Date: </span> {{ invoice.date }}</div>
       </div>
       <div id="project">
-        <div><span>Billed To: </span> {{ customer.name }}</div>
+        <div><span>Billed To: </span> {{ customer.name }} - 
+          {% if invoice.status  == 'Just Created' or invoice.status == 'Unpaid' %}
+          <span style="color: red; font-size: medium;"> UNPAID </span>
+          {% else %}
+          <span style="color: green; font-size: medium;"> PAID </span>
+          {% endif %}
+        </div>
         <div><span>Phone: </span> {{ customer.phone_number }}</div>
         <div><span>INVOICE ID: </span> <strong>{{ invoice.id }}</strong></div>
         <div><span>MANIFEST ID: </span> <strong>{{ container_data.id }} - N {{ container_data.manifaist }}</strong></div>

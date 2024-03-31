@@ -369,6 +369,7 @@
                       <p>No images found.</p>
                     {% endif %}
                   </div>
+
                   <div id="success-message" style="display: none;" class="alert alert-success" role="alert">
                     Image saved successfully.
                   </div>
@@ -380,12 +381,9 @@
                   
                   <button id="add-image-btn" class="btn btn-primary me-1">
                     <i class="fa fa-plus"></i> Import Image
-
-                    
-
                   </button>
 
-                  
+                  <button id="download-button" class="btn btn-primary me-1" onclick="downloadImages01()"> <i class="fa fa-download"></i> Download Images</button>
                   
                   <button id="save-images-btn" class="btn btn-primary" disabled>
                     Save Images
@@ -413,6 +411,27 @@
                   <input type="hidden" id="invoice-id" value="{{ invoice.id }}">
                   <!-- Update your JavaScript to send the comment to the server -->
                 <script>
+
+
+function downloadImages01() {
+    var images = document.querySelectorAll('.imported-image');
+    
+    // Loop through all images
+    images.forEach(function(img, index) {
+      // Create a link element
+      var link = document.createElement('a');
+      
+      // Set the href attribute to the image source
+      link.href = img.src;
+      
+      // Set the download attribute to specify the filename
+      link.download = 'image_' + index + '.jpg';
+      
+      // Trigger a click event on the link to initiate the download
+      link.click();
+    });
+  }
+
                  // Inside the function sendMessage() for saving comments
 function sendMessage() {
   const commentText = document.querySelector('.chat-input').value; // Get text from the textarea
@@ -439,7 +458,7 @@ function sendMessage() {
     },
     success: function (data) {
       if (data.success) {
-        // Comment saved successfully, update the chat interface
+        // Com÷∫√ment saved successfully, update the chat interface
         // Update the textarea with the comment text
         const textarea = document.querySelector('.chat-input');
         textarea.value = commentText;

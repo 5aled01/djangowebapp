@@ -361,6 +361,7 @@ def pages(request):
                 items = invoice.items.all()
                 invoice_summary = {
                     'customer_name': invoice.customer.name,
+                    'customer_phone_number': invoice.customer.phone_number,
                     'total_quantity': items.aggregate(Sum('quantity'))['quantity__sum'],
                     'total_cbm': items.aggregate(Sum('CBM'))['CBM__sum'],
                     'total_price': items.aggregate(Sum('price'))['price__sum']
