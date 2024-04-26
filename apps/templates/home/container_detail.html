@@ -127,15 +127,18 @@
                     {% block javascripts %}
                     
 <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
-    <script type="text/javascript">
-        $("#btnPrint").live("click", function () {
-            var divContents = $("#dvContainer").html();
-            var printWindow = window.open('', '', 'height=600,width=600');
-            printWindow.document.write('<html><head><title>PDF Container</title></head><body>');
-            printWindow.document.write(divContents);
-            printWindow.document.close();
-            printWindow.print();
-        });
-    </script>
+<script type="text/javascript">
+  $(document).ready(function () {
+      $("#btnPrint").on("click", function () {
+          var divContents = $("#dvContainer").html();
+          var printWindow = window.open('', '', 'height=600,width=600');
+          printWindow.document.write('<html><head><title>PDF Container</title></head><body>');
+          printWindow.document.write(divContents);
+          printWindow.document.close();
+          printWindow.print();
+      });
+  });
+</script>
+
 
                     {% endblock javascripts %}
